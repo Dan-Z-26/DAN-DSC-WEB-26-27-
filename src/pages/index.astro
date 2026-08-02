@@ -1,9 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero';
+import IntroLoader from '../components/intro-loader/IntroLoader.astro';
 ---
 
 <BaseLayout>
+  <!-- Cinematic Intro Loader -->
+  <IntroLoader />
+
   <!-- Hero Component (React Island) -->
   <Hero client:load />
 
