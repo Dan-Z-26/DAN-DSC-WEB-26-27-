@@ -1,111 +1,120 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header';
+import Header from '../components/Header.tsx';
+import Footer from '../components/Footer.tsx';
+import SideRays from '../components/SideRays.tsx';
+import TechParticles from '../components/TechParticles.tsx';
+import Watermark from '../components/Watermark.astro';
+import '../styles/contact.css';
 import '../styles/about.css';
 ---
 
-<BaseLayout title="About | Shaping The Future">
-  <!-- Marquee -->
+<BaseLayout
+  title="About — Developer Students Club | SRM IST Ramapuram"
+  description="Learn about Developer Students Club, our mission, vision, and the community we build."
+>
+  <div class="side-rays-bg">
+    <SideRays
+      client:only="react"
+      speed={1.1}
+      rayColor1="#1dd1a1"
+      rayColor2="#00f2fe"
+      intensity={1.1}
+      spread={2.2}
+      origin="top-right"
+      tilt={0}
+      saturation={1.3}
+      blend={0.7}
+      falloff={1.5}
+      opacity={0.6}
+    />
+  </div>
+
+  <TechParticles client:idle />
+
+  <svg class="corner-graphic corner-top-left" width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,50 L100,50 L150,100 L220,100" stroke="rgba(232, 237, 233, 0.4)" stroke-width="1.5" stroke-linecap="round" />
+    <path d="M60,0 L60,80 L100,120 L150,120" stroke="rgba(232, 237, 233, 0.25)" stroke-width="1" stroke-linecap="round" />
+    <circle cx="220" cy="100" r="3" fill="#1dd1a1" />
+  </svg>
+
+  <svg class="corner-graphic corner-top-right" width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M250,50 L150,50 L100,100 L30,100" stroke="rgba(232, 237, 233, 0.4)" stroke-width="1.5" stroke-linecap="round" />
+    <path d="M190,0 L190,80 L150,120 L100,120" stroke="rgba(232, 237, 233, 0.25)" stroke-width="1" stroke-linecap="round" />
+    <circle cx="30" cy="100" r="3" fill="#1dd1a1" />
+  </svg>
+
   <div class="dsc-marquee-container">
     <div class="dsc-marquee-content">
-      <div style="display: flex; align-items: center">
-        <div class="dsc-marquee-item">UPCOMING HACKATHON: CODEFEST 2026</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">NEW WORKSHOPS EVERY WEEK</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">JOIN THE OPEN SOURCE REVOLUTION</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">EMPOWERING STUDENT DEVELOPERS</div><div class="dsc-marquee-star">★</div>
-      </div>
-      <div style="display: flex; align-items: center">
-        <div class="dsc-marquee-item">UPCOMING HACKATHON: CODEFEST 2026</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">NEW WORKSHOPS EVERY WEEK</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">JOIN THE OPEN SOURCE REVOLUTION</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">EMPOWERING STUDENT DEVELOPERS</div><div class="dsc-marquee-star">★</div>
-      </div>
-      <div style="display: flex; align-items: center">
-        <div class="dsc-marquee-item">UPCOMING HACKATHON: CODEFEST 2026</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">NEW WORKSHOPS EVERY WEEK</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">JOIN THE OPEN SOURCE REVOLUTION</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">EMPOWERING STUDENT DEVELOPERS</div><div class="dsc-marquee-star">★</div>
-      </div>
+      <div class="dsc-marquee-item">DEVELOPER STUDENTS CLUB • STUDENT DRIVEN • CREATIVE • COLLABORATIVE</div>
+      <div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">LEARN • CONNECT • CREATE • LEAD</div>
+      <div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">DEVELOPER STUDENTS CLUB • STUDENT DRIVEN • CREATIVE • COLLABORATIVE</div>
+      <div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">LEARN • CONNECT • CREATE • LEAD</div>
+      <div class="dsc-marquee-star">★</div>
     </div>
   </div>
 
-  <!-- Navigation -->
   <Header client:load active="about" />
 
-  <!-- Hero Section -->
-  <header class="about-hero">
-    <div class="hero-image-container">
-      <div class="checkered-overlay"></div>
-      <img src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Action Shot" class="hero-bg">
-    </div>
-    <h1 class="massive-text">SHAPING THE FUTURE OF FAN EXPERIENCE</h1>
-  </header>
+  <main class="contact-container about-container">
+    <div class="contact-layout-wrapper about-layout-wrapper">
+      <Watermark text="ABOUT" />
 
-  <!-- Intro Block -->
-  <section class="intro-block">
-    <div class="intro-col text-left">
-      <p>WE ARE A GLOBAL AGENCY DRIVEN BY PASSION AND INNOVATION, CREATING EXPERIENCES THAT CONNECT FANS TO THE SPORTS THEY LOVE IN UNPRECEDENTED WAYS.</p>
-    </div>
-    <div class="intro-col center-image">
-      <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Person holding ball">
-    </div>
-    <div class="intro-col text-right">
-      <p>OUR TEAM BRINGS TOGETHER EXPERTISE IN STRATEGY, DESIGN, AND TECHNOLOGY TO DELIVER CUTTING-EDGE SOLUTIONS FOR BRANDS WORLDWIDE.</p>
-    </div>
-  </section>
+      <section class="about-hero-card">
+        <div class="about-hero-copy">
+          <p class="about-eyebrow">Developer Students Club</p>
+          <h1>Where curiosity becomes community.</h1>
+          <p>
+            DSC is a student-driven community created to bring together passionate, creative, and enthusiastic students with shared interests. Our club provides a platform where students can learn new skills, exchange ideas, collaborate on projects, and make lasting connections.
+          </p>
+          <p>
+            We believe that college life is about more than academics. Through workshops, events, competitions, discussions, and hands-on activities, we encourage students to explore their interests, discover their talents, and grow both personally and professionally.
+          </p>
+        </div>
 
-  <!-- Latest Work -->
-  <section class="latest-work">
-    <h2 class="massive-text">LATEST WORK</h2>
-    <div class="work-grid">
-      <div class="work-item full-width"><img src="https://images.unsplash.com/photo-1535139262971-c51845709a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Golf Crowd"></div>
-      <div class="work-item half-width"><img src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Soccer Crowd"></div>
-      <div class="work-item half-width"><img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Soccer Player"></div>
-      <div class="work-item full-width"><img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Field"></div>
-    </div>
-  </section>
+        <div class="about-hero-media">
+          <img src="/about/Screenshot 2026-08-09 224723.png" alt="Developer Students Club community activity" />
+        </div>
+      </section>
 
-  <!-- We Keep Good -->
-  <section class="partners">
-    <h2 class="massive-text">WE KEEP GOOD</h2>
-    <div class="logos-container">
-      <div class="logo">LIV GOLF</div>
-      <div class="logo">Spotify</div>
-      <div class="logo">WSL</div>
-    </div>
-  </section>
+      <section class="about-grid">
+        <article class="about-card about-card--wide">
+          <p class="about-card-label">What We Do</p>
+          <ul class="about-list">
+            <li>Organize workshops, seminars, and interactive sessions</li>
+            <li>Conduct competitions and exciting club events</li>
+            <li>Encourage creativity, innovation, and teamwork</li>
+            <li>Provide opportunities to learn practical skills</li>
+            <li>Collaborate with students and other college clubs</li>
+            <li>Create a friendly and inclusive community</li>
+          </ul>
+        </article>
 
-  <!-- Insights & Opinions -->
-  <section class="insights">
-    <h2 class="massive-text">INSIGHTS & OPINIONS</h2>
-    <div class="insights-grid">
-      <div class="insight-card">
-        <h3 class="insight-date">27.05</h3>
-        <p class="insight-title">The evolution of digital fan engagement in modern sports stadiums.</p>
-        <img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Stadium">
-      </div>
-      <div class="insight-card">
-        <h3 class="insight-date">21.05</h3>
-        <p class="insight-title">How augmented reality is transforming the broadcast experience.</p>
-        <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="AR">
-      </div>
-      <div class="insight-card">
-        <h3 class="insight-date">19.05</h3>
-        <p class="insight-title">Creating personalized journeys for the next generation of fans.</p>
-        <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Fans">
-      </div>
-    </div>
-    <div class="btn-container">
-      <a href="#" class="primary-btn">Read all news</a>
-    </div>
-  </section>
+        <article class="about-card">
+          <p class="about-card-label">Our Vision</p>
+          <h3>To build a vibrant student community where everyone has the opportunity to learn, create, collaborate, and lead.</h3>
+        </article>
 
-  <!-- Bottom Mask -->
-  <section class="bottom-mask">
-    <div class="mask-text-container">
-      <h1 class="mask-text">WOW</h1>
-    </div>
-  </section>
+        <article class="about-card">
+          <p class="about-card-label">Our Mission</p>
+          <p>
+            Our mission is to provide students with opportunities beyond the classroom, helping them develop confidence, leadership, communication, teamwork, and practical skills while enjoying their college experience.
+          </p>
+        </article>
 
-  <script src="../scripts/about.js"></script>
+        <article class="about-card about-card--join">
+          <p class="about-card-label">Join Us</p>
+          <p>
+            Whether you're a beginner, an experienced enthusiast, or simply curious to learn something new, there's a place for you at DSC.
+          </p>
+          <p class="about-cta">Learn. Connect. Create. Lead......</p>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <Footer client:visible={{ rootMargin: '100px' }} active="about" />
 </BaseLayout>
