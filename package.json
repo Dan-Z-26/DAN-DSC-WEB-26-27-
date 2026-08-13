@@ -5,9 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "dev:loader-original": "astro dev",
-    "dev:loader-trial": "LOADER_VARIANT=trial astro dev",
-    "dev:loader-cinematic": "LOADER_VARIANT=cinematic astro dev",
     "build": "astro build && node scripts/postbuild.js",
     "preview": "astro preview",
     "astro": "astro"

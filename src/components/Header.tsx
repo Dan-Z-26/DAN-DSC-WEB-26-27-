@@ -15,11 +15,7 @@ export default function Header({ active }: Props) {
       {/* Navigation */}
       <header className="home-nav-header">
         <a href="/" className="home-nav-logo">
-          {/* Grey.png is a stacked lockup (mark above wordmark), unlike the old
-              horizontal club-logo.webp — its text occupies a much smaller share
-              of the image height, so it needs a taller display size to stay
-              legible at the same wordmark scale as before. */}
-          <img src="/logo/Grey.png" alt="DSC Logo" width="108" height="108" style={{ height: '108px', width: 'auto', objectFit: 'contain' }} />
+          <img src="/logo/club-logo.webp" alt="DSC Logo" width="80" height="80" style={{ height: '80px', width: 'auto', objectFit: 'contain' }} />
         </a>
         <nav className="home-nav-pill hidden md:flex">
           <a href="/" className={active === 'home' ? 'active' : ''}>Home</a>

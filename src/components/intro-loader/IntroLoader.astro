@@ -9,47 +9,15 @@
   <div class="intro-hex-bg" aria-hidden="true"></div>
 
   <div class="intro-stage">
-    <svg class="intro-symbol" viewBox="160 60 550 300" aria-hidden="true">
-      <!-- Geometry traced from Grey.png, then cleaned up for symmetry:
-           - Both brackets are now EXACT mirrors of each other (159/213.5/268),
-             not the ~1-unit-off values the raw trace produced.
-           - Both gaps (bracket-to-slash) are equalized to 78.5 units — the
-             previous +25/-25 outward shift preserved the traced asymmetry
-             instead of fixing it (83 vs 74).
-           - The slash is re-centered on the brackets' vertical midline
-             (213.5) instead of sitting 8.5 units high, so it overshoots the
-             bracket arms equally top and bottom (56 each way) rather than
-             asymmetrically (64 top / 47.5 bottom). Its height (221, ~2.02x
-             the bracket span) and stroke-width (40) are unchanged from the
-             source. Gradient sampled from the same image (top ~#cdcdcd ->
-             bottom ~#616161). -->
-      <defs>
-        <linearGradient id="introMarkGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#cdcdcd"/>
-          <stop offset="100%" stop-color="#616161"/>
-        </linearGradient>
-        <!-- Grey.png's slash has genuinely HORIZONTAL top/bottom cuts (traced
-             corners (504,94)/(464,95) are ~1px apart in y) — a flat-cut
-             parallelogram, not the tilted cap stroke-linecap produces on a
-             diagonal line (perpendicular-to-line, not perpendicular-to-vertical).
-             So the slash path below is drawn well past both ends (66 to 361,
-             vs. the visible 103 to 324) and this rect clips it back to an exact
-             horizontal top and bottom. clip-path is independent of
-             stroke-dasharray, so svg.createDrawable's draw-in animation on this
-             path is unaffected — it still sweeps top to bottom, just cropped to
-             the true shape. -->
-        <clipPath id="introSlashClip" clipPathUnits="userSpaceOnUse">
-          <rect x="350" y="94" width="180" height="240"/>
-        </clipPath>
-      </defs>
-      <path class="bracket-left" d="M 314.5 159 L 210.5 213.5 L 314.5 268"
-            fill="none" stroke="url(#introMarkGradient)" stroke-width="40"
+    <svg class="intro-symbol" viewBox="0 0 400 260" aria-hidden="true">
+      <path class="bracket-left" d="M 120 50 L 20 130 L 120 210"
+            fill="none" stroke="#2CA6A4" stroke-width="26"
             stroke-linecap="square" stroke-linejoin="miter"/>
-      <path class="slash" d="M 499.2 66 L 377.8 361"
-            fill="none" stroke="url(#introMarkGradient)" stroke-width="40"
-            stroke-linecap="butt" clip-path="url(#introSlashClip)"/>
-      <path class="bracket-right" d="M 562.5 159 L 666.5 213.5 L 563 268"
-            fill="none" stroke="url(#introMarkGradient)" stroke-width="40"
+      <path class="slash" d="M 175 210 L 225 50"
+            fill="none" stroke="#2CA6A4" stroke-width="26"
+            stroke-linecap="square"/>
+      <path class="bracket-right" d="M 280 50 L 380 130 L 280 210"
+            fill="none" stroke="#2CA6A4" stroke-width="26"
             stroke-linecap="square" stroke-linejoin="miter"/>
     </svg>
 
@@ -124,7 +92,7 @@
     width: clamp(150px, 26vw, 260px);
     height: auto;
     overflow: visible;
-    filter: drop-shadow(0 0 10px rgba(180, 180, 180, 0.4));
+    filter: drop-shadow(0 0 10px rgba(44, 166, 164, 0.45));
     will-change: transform, opacity;
   }
 
@@ -148,7 +116,7 @@
     text-align: center;
     font-family: 'Arial Narrow', Arial, sans-serif;
     font-weight: 800;
-    color: #cecece; /* sampled from Grey.png's wordmark */
+    color: #F5F5F5;
     will-change: transform, opacity;
   }
 
@@ -190,7 +158,7 @@
     font-weight: 500;
     font-size: clamp(0.85rem, 2.4vw, 1.15rem);
     letter-spacing: 5px;
-    color: #cecece; /* sampled from Grey.png's subtitle */
+    color: #2CA6A4;
     text-align: center;
     opacity: 0;
     transform: translateY(8px);

@@ -2,15 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero';
 import IntroLoader from '../components/intro-loader/IntroLoader.astro';
-import IntroLoaderTrial from '../components/intro-loader/IntroLoaderTrial.astro';
-import IntroLoaderCinematic from '../components/intro-loader/IntroLoaderCinematic.astro';
-
-// Loader switch: LOADER_VARIANT picks which intro loader mounts, so variants can
-// be compared side by side. Defaults to the original.
-//   (unset)   -> IntroLoader           `npm run dev:loader-original`
-//   trial     -> IntroLoaderTrial      `npm run dev:loader-trial`
-//   cinematic -> IntroLoaderCinematic  `npm run dev:loader-cinematic`
-const LOADER_VARIANT = process.env.LOADER_VARIANT ?? 'original';
 
 import cmeGroupLogo from '../../assets/Alumnus company/cme group.png';
 import lloydsLogo from '../../assets/Alumnus company/lloyds.png';
@@ -27,10 +18,8 @@ import jpMorganLogo from '../../assets/Alumnus company/jp morgan.png';
 ---
 
 <BaseLayout>
-  <!-- Intro Loader -->
-  {LOADER_VARIANT === 'cinematic' ? <IntroLoaderCinematic />
-    : LOADER_VARIANT === 'trial' ? <IntroLoaderTrial />
-    : <IntroLoader />}
+  <!-- Cinematic Intro Loader -->
+  <IntroLoader />
 
   <!-- Hero Component (React Island) -->
   <Hero client:load />
