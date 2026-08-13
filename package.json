@@ -5,12 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "dev:loader-original": "astro dev",
+    "dev:loader-trial": "LOADER_VARIANT=trial astro dev",
+    "dev:loader-cinematic": "LOADER_VARIANT=cinematic astro dev",
     "build": "astro build && node scripts/postbuild.js",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.0",
+    "animejs": "^4.5.0",
     "astro": "^7.0.3",
     "gsap": "^3.15.0",
     "lucide-react": "^1.21.0",
