@@ -8,6 +8,7 @@ import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import ContactArtCutouts from '../components/ContactArtCutouts.tsx';
 import SideRays from '../components/SideRays.tsx';
+import TechParticles from '../components/TechParticles.tsx';
 import '../styles/contact.css';
 ---
 
@@ -30,6 +31,9 @@ import '../styles/contact.css';
       opacity={0.65}
     />
   </div>
+
+  <!-- Background Particles (Shared with About Page) -->
+  <TechParticles client:idle />
 
   <!-- Decorative Corner Circuit Board Graphics -->
   <svg class="corner-graphic corner-top-left" width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">

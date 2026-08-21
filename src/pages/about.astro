@@ -1,11 +1,21 @@
 ---
+/**
+ * About Page
+ * Developer Students Club • SRM IST Ramapuram
+ *
+ * Card interaction: handled by AboutSection.tsx (React, client:load).
+ * Pattern: identical to DomainsSection.tsx + DomainCard.tsx.
+ * Scope: ONLY about.astro + about.css + src/components/about/ changed.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import SideRays from '../components/SideRays.tsx';
 import TechParticles from '../components/TechParticles.tsx';
 import Watermark from '../components/Watermark.astro';
+import AboutSection from '../components/about/AboutSection.tsx';
 import '../styles/contact.css';
+import '../styles/domains.css';
 import '../styles/about.css';
 ---
 
@@ -13,6 +23,7 @@ import '../styles/about.css';
   title="About — Developer Students Club | SRM IST Ramapuram"
   description="Learn about Developer Students Club, our mission, vision, and the community we build."
 >
+  <!-- Interactive WebGL SideRays Background -->
   <div class="side-rays-bg">
     <SideRays
       client:only="react"
@@ -30,88 +41,68 @@ import '../styles/about.css';
     />
   </div>
 
+  <!-- Background Particles -->
   <TechParticles client:idle />
 
+  <!-- Decorative Corner Circuit Graphics (identical to Domains) -->
   <svg class="corner-graphic corner-top-left" width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M0,50 L100,50 L150,100 L220,100" stroke="rgba(232, 237, 233, 0.4)" stroke-width="1.5" stroke-linecap="round" />
     <path d="M60,0 L60,80 L100,120 L150,120" stroke="rgba(232, 237, 233, 0.25)" stroke-width="1" stroke-linecap="round" />
     <circle cx="220" cy="100" r="3" fill="#1dd1a1" />
+    <circle cx="150" cy="120" r="2" fill="rgba(232, 237, 233, 0.6)" />
   </svg>
 
   <svg class="corner-graphic corner-top-right" width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M250,50 L150,50 L100,100 L30,100" stroke="rgba(232, 237, 233, 0.4)" stroke-width="1.5" stroke-linecap="round" />
     <path d="M190,0 L190,80 L150,120 L100,120" stroke="rgba(232, 237, 233, 0.25)" stroke-width="1" stroke-linecap="round" />
     <circle cx="30" cy="100" r="3" fill="#1dd1a1" />
+    <circle cx="100" cy="120" r="2" fill="rgba(232, 237, 233, 0.6)" />
   </svg>
 
+  <!-- Marquee Ticker -->
   <div class="dsc-marquee-container">
     <div class="dsc-marquee-content">
-      <div class="dsc-marquee-item">DEVELOPER STUDENTS CLUB • STUDENT DRIVEN • CREATIVE • COLLABORATIVE</div>
-      <div class="dsc-marquee-star">★</div>
-      <div class="dsc-marquee-item">LEARN • CONNECT • CREATE • LEAD</div>
-      <div class="dsc-marquee-star">★</div>
-      <div class="dsc-marquee-item">DEVELOPER STUDENTS CLUB • STUDENT DRIVEN • CREATIVE • COLLABORATIVE</div>
-      <div class="dsc-marquee-star">★</div>
-      <div class="dsc-marquee-item">LEARN • CONNECT • CREATE • LEAD</div>
-      <div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">DEVELOPER STUDENTS CLUB • STUDENT DRIVEN • CREATIVE • COLLABORATIVE</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">LEARN • CONNECT • CREATE • LEAD</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">DEVELOPER STUDENTS CLUB • STUDENT DRIVEN • CREATIVE • COLLABORATIVE</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">LEARN • CONNECT • CREATE • LEAD</div><div class="dsc-marquee-star">★</div>
     </div>
   </div>
 
+  <!-- Navigation -->
   <Header client:load active="about" />
 
   <main class="contact-container about-container">
     <div class="contact-layout-wrapper about-layout-wrapper">
       <Watermark text="ABOUT" />
 
-      <section class="about-hero-card">
-        <div class="about-hero-copy">
-          <p class="about-eyebrow">Developer Students Club</p>
-          <h1>Where curiosity becomes community.</h1>
-          <p>
-            DSC is a student-driven community created to bring together passionate, creative, and enthusiastic students with shared interests. Our club provides a platform where students can learn new skills, exchange ideas, collaborate on projects, and make lasting connections.
-          </p>
-          <p>
-            We believe that college life is about more than academics. Through workshops, events, competitions, discussions, and hands-on activities, we encourage students to explore their interests, discover their talents, and grow both personally and professionally.
-          </p>
+      <!--
+        About content section — mirrors .domains-bottom-cta architecture.
+        Wrapper establishes stacking context (z-index 10, isolation).
+        Artworks sit at z-index 1, cards content at z-index 2.
+      -->
+      <section class="ab-container">
+        <!-- Decorative artwork 1: upper-left negative space -->
+        <img
+          src="/about/new_dsc_image-removebg-preview-removebg-preview.png"
+          class="ab-deco-art ab-deco-top-left"
+          alt=""
+          aria-hidden="true"
+        />
+
+        <!-- Decorative artwork 2: bottom-right negative space -->
+        <img
+          src="/about/new_dsc_image-removebg-preview-removebg-preview.png"
+          class="ab-deco-art ab-deco-bottom-right"
+          alt=""
+          aria-hidden="true"
+        />
+
+        <!-- Cards content at z-index: 2 — always above artworks -->
+        <div class="about-cards-content" style="position: relative; z-index: 2; pointer-events: auto;">
+          <AboutSection client:load />
         </div>
 
-        <div class="about-hero-media">
-          <img src="/about/Screenshot 2026-08-09 224723.png" alt="Developer Students Club community activity" />
-        </div>
-      </section>
-
-      <section class="about-grid">
-        <article class="about-card about-card--wide">
-          <p class="about-card-label">What We Do</p>
-          <ul class="about-list">
-            <li>Organize workshops, seminars, and interactive sessions</li>
-            <li>Conduct competitions and exciting club events</li>
-            <li>Encourage creativity, innovation, and teamwork</li>
-            <li>Provide opportunities to learn practical skills</li>
-            <li>Collaborate with students and other college clubs</li>
-            <li>Create a friendly and inclusive community</li>
-          </ul>
-        </article>
-
-        <article class="about-card">
-          <p class="about-card-label">Our Vision</p>
-          <h3>To build a vibrant student community where everyone has the opportunity to learn, create, collaborate, and lead.</h3>
-        </article>
-
-        <article class="about-card">
-          <p class="about-card-label">Our Mission</p>
-          <p>
-            Our mission is to provide students with opportunities beyond the classroom, helping them develop confidence, leadership, communication, teamwork, and practical skills while enjoying their college experience.
-          </p>
-        </article>
-
-        <article class="about-card about-card--join">
-          <p class="about-card-label">Join Us</p>
-          <p>
-            Whether you're a beginner, an experienced enthusiast, or simply curious to learn something new, there's a place for you at DSC.
-          </p>
-          <p class="about-cta">Learn. Connect. Create. Lead......</p>
-        </article>
       </section>
     </div>
   </main>
