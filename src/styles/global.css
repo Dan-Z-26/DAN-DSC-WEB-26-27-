@@ -6,6 +6,21 @@
 /* Fonts loaded via async <link> in BaseLayout.astro head for non-blocking delivery */
 @import "tailwindcss";
 
+/* ── Mainframe Hero ────────────────────────────────────────── */
+:root {
+  --font-heading: 'HelveticaNowDisplay-Medium', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'HelveticaNowDisplayW01-Rg', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.mainframe-hero {
+  font-family: var(--font-body);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* Size-adjusted fallbacks to eliminate CLS on font swap */
 @font-face {
   font-family: 'Inter Fallback';
@@ -1748,11 +1763,6 @@ body.eye-comfort-mode::after {
    ============================================================ */
 .showcase-section {
   position: relative;
-  background-color: #c492b1;
-  background-image: url('/showcase/showcase-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 
 .showcase-sticky-container {
