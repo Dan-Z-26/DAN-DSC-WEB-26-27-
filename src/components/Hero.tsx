@@ -1,110 +1,127 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Header from './Header';
 
-const BG_IMAGE_1 = '/creative-ai/hero_bg1.webp';
-const BG_IMAGE_2 = '/creative-ai/hero_bg2.webp';
-
-const SPOTLIGHT_R = 260;
-
-
-function RevealLayer({ image, cursorX, cursorY }: { image: string; cursorX: number; cursorY: number }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [maskUrl, setMaskUrl] = useState('');
+/* ─── useTypewriter hook ─────────────────────────────────── */
+function useTypewriter(text: string, speed = 38, startDelay = 600) {
+  const [displayed, setDisplayed] = useState('');
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    let idx = 0;
+    let interval: ReturnType<typeof setInterval>;
+
+    const timeout = setTimeout(() => {
+      interval = setInterval(() => {
+        idx++;
+        setDisplayed(text.slice(0, idx));
+        if (idx >= text.length) {
+          clearInterval(interval);
+          setDone(true);
+        }
+      }, speed);
+    }, startDelay);
+
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
     };
-    resize();
-    window.addEventListener('resize', resize);
-    return () => window.removeEventListener('resize', resize);
-  }, []);
+  }, [text, speed, startDelay]);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (cursorX === -999) return;
-
-    const gradient = ctx.createRadialGradient(cursorX, cursorY, 0, cursorX, cursorY, SPOTLIGHT_R);
-    gradient.addColorStop(0, 'rgba(255,255,255,1)');
-    gradient.addColorStop(0.4, 'rgba(255,255,255,1)');
-    gradient.addColorStop(0.6, 'rgba(255,255,255,0.75)');
-    gradient.addColorStop(0.75, 'rgba(255,255,255,0.4)');
-    gradient.addColorStop(0.88, 'rgba(255,255,255,0.12)');
-    gradient.addColorStop(1, 'rgba(255,255,255,0)');
-
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(cursorX, cursorY, SPOTLIGHT_R, 0, Math.PI * 2);
-    ctx.fill();
-
-    setMaskUrl(canvas.toDataURL());
-  }, [cursorX, cursorY]);
-
-  return (
-    <>
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" style={{ display: 'none' }} />
-      <div
-        className="absolute inset-0 bg-center bg-cover bg-no-repeat z-30 pointer-events-none"
-        style={{
-          backgroundImage: `url(${image})`,
-          maskImage: maskUrl ? `url(${maskUrl})` : 'none',
-          WebkitMaskImage: maskUrl ? `url(${maskUrl})` : 'none',
-          maskSize: '100% 100%',
-          WebkitMaskSize: '100% 100%',
-          maskRepeat: 'no-repeat',
-          WebkitMaskRepeat: 'no-repeat'
-        }}
-      />
-    </>
-  );
+  return { displayed, done };
 }
 
+/* ─── Constants ──────────────────────────────────────────── */
+const VIDEO_SRC =
+  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260530_042513_df96a13b-6155-4f6e-8b93-c9dee66fba08.mp4';
+const SENSITIVITY = 0.8;
+
+const TYPEWRITER_TEXT =
+  'Glad you stopped in. Good taste tends to find us. Now, what are we building?';
+
+const PILL_LABELS = [
+  'Pitch us an idea',
+  'Come work here',
+  'Send a brief hello',
+  'See how we operate',
+];
+
+/* ─── Hero component ─────────────────────────────────────── */
 export default function Hero() {
-  const [cursorPos, setCursorPos] = useState({ x: -999, y: -999 });
-  const mouse = useRef({ x: -999, y: -999 });
-  const smooth = useRef({ x: -999, y: -999 });
-  const rafRef = useRef<number | undefined>(undefined);
+  /* video scrub refs */
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const prevX = useRef<number | null>(null);
+  const targetTime = useRef(0);
+  const isSeeking = useRef(false);
+
+  /* pill visibility */
+  const [pillsVisible, setPillsVisible] = useState(false);
+
+  /* typewriter */
+  const { displayed, done } = useTypewriter(TYPEWRITER_TEXT);
+
+  /* ── Video mouse-scrub ────────────────────────────────── */
+  const seekToTarget = useCallback(() => {
+    const v = videoRef.current;
+    if (!v || !isFinite(v.duration)) return;
+    isSeeking.current = true;
+    v.currentTime = targetTime.current;
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      mouse.current = { x: e.clientX, y: e.clientY };
-      if (smooth.current.x === -999) {
-        smooth.current = { x: e.clientX, y: e.clientY };
-      }
-    };
-    window.addEventListener('mousemove', handleMouseMove);
+      const v = videoRef.current;
+      if (!v || !isFinite(v.duration)) return;
 
-    const loop = () => {
-      if (smooth.current.x !== -999) {
-        const dx = mouse.current.x - smooth.current.x;
-        const dy = mouse.current.y - smooth.current.y;
-        
-        if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
-          smooth.current.x += dx * 0.1;
-          smooth.current.y += dy * 0.1;
-          setCursorPos({ x: smooth.current.x, y: smooth.current.y });
+      if (prevX.current !== null) {
+        const delta = e.clientX - prevX.current;
+        const offset =
+          (delta / window.innerWidth) * SENSITIVITY * v.duration;
+        targetTime.current = Math.max(
+          0,
+          Math.min(v.duration, targetTime.current + offset)
+        );
+
+        if (!isSeeking.current) {
+          seekToTarget();
         }
       }
-      rafRef.current = requestAnimationFrame(loop);
+      prevX.current = e.clientX;
     };
-    rafRef.current = requestAnimationFrame(loop);
 
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [seekToTarget]);
+
+  const handleSeeked = useCallback(() => {
+    const v = videoRef.current;
+    isSeeking.current = false;
+    if (v && Math.abs(v.currentTime - targetTime.current) > 0.01) {
+      seekToTarget();
+    }
+  }, [seekToTarget]);
+
+  /* ── Show pills 400ms after mount ─────────────────────── */
+  useEffect(() => {
+    const t = setTimeout(() => setPillsVisible(true), 400);
+    return () => clearTimeout(t);
   }, []);
 
+  /* ── Copy email helper ────────────────────────────────── */
+  const copyEmail = () => {
+    navigator.clipboard.writeText('hello@mainframe.co');
+  };
+
   return (
-    <div id="home" style={{ minHeight: '100vh', background: '#fff', letterSpacing: '-0.02em', fontFamily: "'Inter', sans-serif" }}>
+    <div
+      id="home"
+      style={{
+        minHeight: '100vh',
+        background: '#fff',
+        letterSpacing: '-0.02em',
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      {/* ── Inline marquee styles (preserved) ──────────── */}
       <style>{`
         @keyframes dsc-marquee {
           0% { transform: translateX(0); }
@@ -145,6 +162,7 @@ export default function Hero() {
         }
       `}</style>
 
+      {/* ── Marquee banner (preserved) ─────────────────── */}
       <div className="dsc-marquee-container">
         <div className="dsc-marquee-content">
           {[...Array(6)].map((_, i) => (
@@ -162,89 +180,159 @@ export default function Hero() {
         </div>
       </div>
 
+      {/* ── Header (preserved) ─────────────────────────── */}
       <Header active="home" />
 
-      {/* ===== Hero Section ===== */}
-      <section className="relative w-full overflow-hidden h-screen" style={{ height: '100dvh', backgroundImage: "url('/creative-ai/1782459062237-ezremove.webp')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        {/* Layer 1 — Base image with Ken Burns zoom */}
-        <div
-          className="absolute inset-0 bg-center bg-cover bg-no-repeat hero-zoom z-10"
-          style={{ backgroundImage: `url(${BG_IMAGE_1})` }}
-        />
+      {/* ── Background video (fixed, mouse-scrub) ──────── */}
+      <video
+        ref={videoRef}
+        muted
+        playsInline
+        preload="auto"
+        onSeeked={handleSeeked}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: '70% center',
+          zIndex: 0,
+        }}
+      >
+        <source src={VIDEO_SRC} type="video/mp4" />
+      </video>
 
-        {/* Layer 2 — Cursor spotlight reveal */}
-        <RevealLayer image={BG_IMAGE_2} cursorX={cursorPos.x} cursorY={cursorPos.y} />
+      {/* ── Hero section ───────────────────────────────── */}
+      <section
+        className="mainframe-hero relative w-full overflow-hidden h-screen flex flex-col justify-end pb-12 md:justify-center md:pb-0 px-5 sm:px-8 md:px-10"
+        style={{ height: '100dvh', zIndex: 1 }}
+      >
+        <div className="max-w-xl relative z-10">
+          {/* 1 — Blurred intro label */}
+          <div
+            style={{
+              pointerEvents: 'none',
+              userSelect: 'none',
+              marginBottom: '1.25rem',
+              fontSize: 'clamp(18px, 4vw, 26px)',
+              lineHeight: 1.3,
+              fontWeight: 400,
+              color: '#000',
+              filter: 'blur(4px)',
+            }}
+          >
+            Hey there, meet A.R.I.A,
+            <br />
+            Mainframe's Adaptive Response Interface Agent
+          </div>
 
-        {/* Layer 3 — Heading */}
-        <div className="absolute top-[19%] left-0 right-0 flex flex-col items-center text-center px-5 pointer-events-none z-50">
-          <h1 style={{ color: '#fff', lineHeight: 0.95, fontWeight: 400 }}>
-            <span
-              className="hero-anim hero-reveal"
+          {/* 2 — Typewriter text */}
+          <p
+            style={{
+              color: '#000',
+              marginBottom: '1.25rem',
+              fontSize: 'clamp(18px, 4vw, 26px)',
+              lineHeight: 1.35,
+              fontWeight: 400,
+              minHeight: '54px',
+            }}
+          >
+            {displayed}
+            {!done && (
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '2px',
+                  height: '1.1em',
+                  backgroundColor: '#000',
+                  verticalAlign: 'middle',
+                  marginLeft: '2px',
+                  animation: 'blink 1s step-end infinite',
+                }}
+              />
+            )}
+          </p>
+
+          {/* 3 — Action pill buttons */}
+          <div
+            className="flex flex-wrap"
+            style={{
+              gap: '0.25rem 0',
+              opacity: pillsVisible ? 1 : 0,
+              transform: pillsVisible ? 'translateY(0)' : 'translateY(8px)',
+              transition: 'opacity 0.4s ease, transform 0.4s ease',
+            }}
+          >
+            {/* White pills */}
+            {PILL_LABELS.map((label) => (
+              <button
+                key={label}
+                className="inline-flex items-center justify-center rounded-full text-[13px] sm:text-[15px] px-4 sm:px-5 mx-[0.2em] mb-[0.4em] transition-colors duration-200"
+                style={{
+                  backgroundColor: '#fff',
+                  color: '#000',
+                  border: '1px solid rgba(0,0,0,0.1)',
+                  paddingTop: '0.3em',
+                  paddingBottom: '0.3em',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#000';
+                  e.currentTarget.style.color = '#fff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#fff';
+                  e.currentTarget.style.color = '#000';
+                }}
+              >
+                {label}
+              </button>
+            ))}
+
+            {/* Outline email pill */}
+            <button
+              onClick={copyEmail}
+              className="inline-flex items-center justify-center rounded-full text-[13px] sm:text-[15px] px-4 sm:px-5 mx-[0.2em] mb-[0.4em] gap-2 sm:gap-3 transition-colors duration-200"
               style={{
-                display: 'block',
-                fontFamily: "'Playfair Display', serif",
-                fontStyle: 'italic',
-                fontWeight: 400,
-                fontSize: 'clamp(3rem, 8vw, 6rem)',
-                letterSpacing: '-0.05em',
-                animationDelay: '0.05s',
+                backgroundColor: 'transparent',
+                color: '#fff',
+                border: '1px solid #fff',
+                paddingTop: '0.3em',
+                paddingBottom: '0.3em',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#fff';
+                e.currentTarget.style.color = '#000';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#fff';
               }}
             >
-              Building the
-            </span>
-            <span
-              className="hero-anim hero-reveal"
-              style={{
-                display: 'block',
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 400,
-                fontSize: 'clamp(3rem, 8vw, 6rem)',
-                letterSpacing: '-0.08em',
-                animationDelay: '0.12s',
-                marginTop: '-4px',
-              }}
-            >
-              developers of tomorrow
-            </span>
-          </h1>
-        </div>
-
-        {/* Layer 4 — Bottom-left paragraph */}
-        <div
-          className="hidden sm:block hero-anim hero-fade"
-          style={{
-            position: 'absolute',
-            bottom: '56px',
-            left: '40px',
-            maxWidth: '260px',
-            zIndex: 50,
-            animationDelay: '0.22s',
-          }}
-        >
-          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.625, fontFamily: "'Inter', sans-serif" }}>
-            Developer Students Club at SRM IST Ramapuram — a community of passionate student developers building, innovating, and leading through technology.
-          </p>
-        </div>
-
-        {/* Layer 5 — Bottom-right block + CTA */}
-        <div
-          className="hero-anim hero-fade"
-          style={{
-            position: 'absolute',
-            bottom: '40px',
-            right: '40px',
-            maxWidth: '260px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            gap: '20px',
-            zIndex: 50,
-            animationDelay: '0.3s',
-          }}
-        >
-          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.625, fontFamily: "'Inter', sans-serif" }}>
-            From hands-on workshops and intense hackathons to open-source contributions and industry collaborations — bridging the gap between classroom learning and real-world development.
-          </p>
+              <span>
+                Reach us:{' '}
+                <span style={{ textDecoration: 'underline', textUnderlineOffset: '1px' }}>
+                  hello@mainframe.co
+                </span>
+              </span>
+              {/* Copy icon — two overlapping rectangles */}
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+            </button>
+          </div>
         </div>
       </section>
     </div>
