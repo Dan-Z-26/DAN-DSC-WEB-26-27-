@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Header from './Header';
-
-const BG_IMAGE_1 = '/creative-ai/hero_bg1.webp';
-const BG_IMAGE_2 = '/creative-ai/hero_bg2.webp';
+import TechParticles from './TechParticles';
+import SideRays from './SideRays';
 
 const SPOTLIGHT_R = 260;
 
@@ -165,47 +164,32 @@ export default function Hero() {
       <Header active="home" />
 
       {/* ===== Hero Section ===== */}
-      <section className="relative w-full overflow-hidden h-screen" style={{ height: '100dvh', backgroundImage: "url('/creative-ai/1782459062237-ezremove.webp')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        {/* Layer 1 — Base image with Ken Burns zoom */}
-        <div
-          className="absolute inset-0 bg-center bg-cover bg-no-repeat hero-zoom z-10"
-          style={{ backgroundImage: `url(${BG_IMAGE_1})` }}
-        />
+      <section className="relative w-full overflow-hidden h-screen" style={{ height: '100dvh', background: '#0a0a0a' }}>
 
-        {/* Layer 2 — Cursor spotlight reveal */}
-        <RevealLayer image={BG_IMAGE_2} cursorX={cursorPos.x} cursorY={cursorPos.y} />
+        {/* Background — SideRays teal gradient + TechParticles */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <SideRays
+              speed={1.2}
+              rayColor1="#1dd1a1"
+              rayColor2="#00f2fe"
+              intensity={1.2}
+              spread={2.5}
+              origin="top-right"
+              tilt={0}
+              saturation={1.5}
+              blend={0.75}
+              falloff={1.6}
+              opacity={0.65}
+            />
+          </div>
+          <TechParticles />
+        </div>
 
-        {/* Layer 3 — Heading */}
-        <div className="absolute top-[19%] left-0 right-0 flex flex-col items-center text-center px-5 pointer-events-none z-50">
-          <h1 style={{ color: '#fff', lineHeight: 0.95, fontWeight: 400 }}>
-            <span
-              className="hero-anim hero-reveal"
-              style={{
-                display: 'block',
-                fontFamily: "'Playfair Display', serif",
-                fontStyle: 'italic',
-                fontWeight: 400,
-                fontSize: 'clamp(3rem, 8vw, 6rem)',
-                letterSpacing: '-0.05em',
-                animationDelay: '0.05s',
-              }}
-            >
-              Building the
-            </span>
-            <span
-              className="hero-anim hero-reveal"
-              style={{
-                display: 'block',
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 400,
-                fontSize: 'clamp(3rem, 8vw, 6rem)',
-                letterSpacing: '-0.08em',
-                animationDelay: '0.12s',
-                marginTop: '-4px',
-              }}
-            >
-              developers of tomorrow
-            </span>
+        {/* Center-staged DSC heading */}
+        <div className="hero-dsc-center">
+          <h1 className="hero-anim hero-reveal hero-dsc-title">
+            DSC
           </h1>
         </div>
 
@@ -226,7 +210,7 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* Layer 5 — Bottom-right block + CTA */}
+        {/* Layer 5 — Bottom-right block */}
         <div
           className="hero-anim hero-fade"
           style={{

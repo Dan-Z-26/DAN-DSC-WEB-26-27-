@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import SplashLoader from '../components/SplashLoader';
 
 interface Props {
   title?: string;
@@ -32,6 +33,7 @@ const { title, description } = Astro.props;
   <link rel="preload" as="image" fetchpriority="high" href="/creative-ai/hero_bg1.webp">
 </head>
 <body>
+  <SplashLoader client:load />
   <slot />
 </body>
 </html>
