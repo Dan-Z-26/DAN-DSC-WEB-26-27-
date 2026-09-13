@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import SplashLoader from '../components/SplashLoader';
 
 interface Props {
   title?: string;
@@ -30,11 +31,9 @@ const { title, description } = Astro.props;
   <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2">
   <!-- LCP image preload: kick off hero background fetch before CSS is parsed -->
   <link rel="preload" as="image" fetchpriority="high" href="/creative-ai/hero_bg1.webp">
-  <!-- Mainframe hero fonts -->
-  <link rel="stylesheet" href="https://db.onlinewebfonts.com/c/5ac3fe7c6abd2f62067f266d89671492?family=HelveticaNowDisplay-Medium">
-  <link rel="stylesheet" href="https://db.onlinewebfonts.com/c/1aa3377e489837a26d019bba501e779d?family=HelveticaNowDisplayW01-Rg">
 </head>
 <body>
+  <SplashLoader client:load />
   <slot />
 </body>
 </html>
