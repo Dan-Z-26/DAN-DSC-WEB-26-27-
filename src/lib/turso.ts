@@ -1,4 +1,4 @@
-import { createClient } from '@libsql/client';
+import { createClient } from '@libsql/client/web';
 
 const DEFAULT_URL = 'libsql://dsc-dscsrmrmp.aws-ap-south-1.turso.io';
 const DEFAULT_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODk0MDcxNTEsImlkIjoiMDFhMGEwZjktYjYwMS03ZGJlLTkzMTQtZmNkMDVhNDVlNDhhIiwia2lkIjoiWFpUMjFKc1dfaVNic1pLYnJXMUZJbFZMS3FIdEQxVGpiUnctbWJtZTNjVSIsInJpZCI6IjkwMjliZjdlLTZiYTMtNDc2ZC1hMGY4LWZhNTFlNjk5Y2E0NSJ9.MJNEDy8E20dSCd1FeFKjRDHeSxVfI45Qe8Od9NTlYopqBU_jNgROhYUtNDynUX_OQG5UNszjm4cqheC2hmKtBQ';
@@ -71,6 +71,8 @@ export function formatMember(row: DbTeamMember): FormattedTeamMember {
     role = 'Member';
   }
 
+  const isPresident = teamRaw.includes('PRESIDENT');
+
   return {
     id: row.id,
     name: row.name,
@@ -78,10 +80,11 @@ export function formatMember(row: DbTeamMember): FormattedTeamMember {
     domain,
     team: row.team,
     image: row.img,
-    github: row.github || undefined,
-    linkedin: row.linkedin || undefined,
-    insta: row.insta || undefined,
+    github: row.github || (isPresident ? 'https://github.com/developer-students-club' : undefined),
+    linkedin: row.linkedin || (isPresident ? 'https://www.linkedin.com/company/dscsrm/' : undefined),
+    insta: row.insta || (isPresident ? 'https://www.instagram.com/dscsrmrmp/' : undefined),
     x: row.x || undefined,
+    email: isPresident ? 'mailto:dsc.srmrmp@gmail.com' : undefined,
     lead: isLead,
   };
 }
