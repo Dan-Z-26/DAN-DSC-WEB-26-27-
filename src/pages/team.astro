@@ -8,6 +8,9 @@ import TeamArtCutouts from '../components/TeamArtCutouts.tsx';
 import TeamShowcase from '../components/TeamShowcase.tsx';
 import TechParticles from '../components/TechParticles.tsx';
 import '../styles/contact.css';
+import { getTeamMembers } from '../lib/turso';
+
+const teamMembers = await getTeamMembers();
 ---
 
 <BaseLayout title="Team — Developer Students Club | SRM IST Ramapuram" description="Meet the passionate core team of student leaders, developers, designers, and organizers behind the Developer Students Club (DSC) at SRM IST Ramapuram.">
@@ -84,7 +87,7 @@ import '../styles/contact.css';
 
       <!-- Team Showcase Cards Grid (React Island) -->
       <section class="team-showcase-section" style="position: relative; z-index: 10; min-height: 1050px;">
-        <TeamShowcase client:idle />
+        <TeamShowcase client:idle initialMembers={teamMembers} />
       </section>
 
       <!-- Bottom Interactive Call to Action Block -->
