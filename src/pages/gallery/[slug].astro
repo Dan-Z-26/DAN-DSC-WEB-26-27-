@@ -1,0 +1,329 @@
+---
+/**
+ * Activity Detail Page
+ * Developer Students Club • SRM IST Ramapuram
+ *
+ * One statically generated page per entry in ACTIVITIES.
+ *
+ * Scrolling past the article reveals the next activity at full size, then
+ * commits to it as the reader keeps scrolling. The handover uses cross-document
+ * view transitions (enabled by `@view-transition` in gallery.css): the next-up
+ * squircle carries the same `view-transition-name` as the hero on the page it
+ * leads to, so the thumbnail morphs into the next hero instead of the browser
+ * cutting to a fresh page. Browsers without support fall back to a normal
+ * navigation.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.tsx';
+import Footer from '../../components/Footer.tsx';
+import SideRays from '../../components/SideRays.tsx';
+import SquircleDefs from '../../components/gallery/SquircleDefs.astro';
+import { ACTIVITIES } from '../../components/gallery/activityData';
+import type { ActivityData } from '../../components/gallery/types';
+import '../../styles/contact.css';
+import '../../styles/gallery.css';
+
+export function getStaticPaths() {
+  return ACTIVITIES.map((activity, index) => ({
+    params: { slug: activity.slug },
+    props: {
+      activity,
+      next: ACTIVITIES[(index + 1) % ACTIVITIES.length],
+      position: index + 1,
+    },
+  }));
+}
+
+interface Props {
+  activity: ActivityData;
+  next: ActivityData;
+  position: number;
+}
+
+const { activity, next, position } = Astro.props;
+const total = ACTIVITIES.length;
+---
+
+<BaseLayout
+  title={`${activity.title} — Gallery | Developer Students Club`}
+  description={activity.blurb}
+>
+
+  <SquircleDefs />
+
+  <div class="side-rays-bg">
+    <SideRays
+      client:only="react"
+      speed={1.0}
+      rayColor1="#1dd1a1"
+      rayColor2="#00f2fe"
+      intensity={1.0}
+      spread={2.5}
+      origin="top-right"
+      tilt={0}
+      saturation={1.4}
+      blend={0.7}
+      falloff={1.6}
+      opacity={0.45}
+    />
+  </div>
+
+  <Header client:load active="gallery" />
+
+  <main class="contact-container activity-detail-main" style="max-width: 1180px;">
+
+    <article class="activity-detail">
+
+      <a href="/gallery" class="activity-back" data-reveal>
+        <span aria-hidden="true">←</span> Back to the spiral
+      </a>
+
+      <header class="activity-detail-header">
+        <span class="activity-detail-tag" data-reveal>{activity.tag}</span>
+
+        <h1 class="activity-detail-title" data-reveal>{activity.title}</h1>
+
+        <p class="activity-detail-meta" data-reveal>
+          {activity.date}
+          <span class="activity-detail-sep" aria-hidden="true">◆</span>
+          Panel {position} of {total}
+        </p>
+      </header>
+
+      <!-- The hero carries the transition name the PREVIOUS page's next-up
+           thumbnail points at, so the two morph into one another. -->
+      <div class="activity-detail-figure" data-reveal>
+        <div
+          class="activity-detail-frame"
+          style={`view-transition-name: activity-${activity.slug};`}
+        >
+          <div class="activity-detail-media">
+            <img
+              src={activity.imagePath}
+              alt={activity.title}
+              class="activity-detail-img"
+              decoding="async"
+            />
+          </div>
+          <span class="activity-halftone" aria-hidden="true"></span>
+        </div>
+
+        <span class="activity-detail-burst" aria-hidden="true">{activity.tag}!</span>
+      </div>
+
+      <!-- Speech bubble carries the one-liner; the body panel carries the rest -->
+      <div class="activity-bubble" data-reveal>
+        <p>{activity.blurb}</p>
+      </div>
+
+      <div class="activity-detail-body" data-reveal>
+        <p class="activity-detail-text">{activity.description}</p>
+      </div>
+
+      <!-- Headline figures -->
+      <div class="activity-stats">
+        {activity.stats.map((stat) => (
+          <div class="activity-stat" data-reveal>
+            <span class="activity-stat-value">{stat.value}</span>
+            <span class="activity-stat-label">{stat.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <h2 class="activity-section-heading" data-reveal>How it runs</h2>
+
+      <!-- Numbered comic panels, one per beat -->
+      <ol class="activity-beats">
+        {activity.highlights.map((item, i) => (
+          <li class="activity-beat" data-reveal>
+            <span class="activity-beat-number" aria-hidden="true">{i + 1}</span>
+            <div class="activity-beat-content">
+              <h3 class="activity-beat-title">{item.title}</h3>
+              <p class="activity-beat-body">{item.body}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <!-- Pull quote -->
+      <figure class="activity-quote" data-reveal>
+        <blockquote class="activity-quote-text">{activity.quote.text}</blockquote>
+        <figcaption class="activity-quote-by">— {activity.quote.attribution}</figcaption>
+      </figure>
+
+      <div class="activity-sentinel" data-next-sentinel aria-hidden="true"></div>
+
+    </article>
+
+    <!-- Commit zone: scrolling through this confirms the handover. The panel
+         appearing never navigates on its own. -->
+    <section class="next-zone" data-next-zone>
+      <div class="next-panel" data-next-panel>
+
+        <p class="next-label">Next panel</p>
+
+        <a href={`/gallery/${next.slug}`} class="next-link" data-next-link>
+
+          <span
+            class="next-frame"
+            style={`view-transition-name: activity-${next.slug};`}
+          >
+            <span class="next-media">
+              <img src={next.imagePath} alt="" decoding="async" />
+            </span>
+            <span class="activity-halftone" aria-hidden="true"></span>
+          </span>
+
+          <span class="next-title">{next.title}</span>
+          <span class="next-blurb">{next.blurb}</span>
+
+          <span class="next-progress">
+            <svg class="next-ring" viewBox="0 0 44 44" aria-hidden="true">
+              <path
+                class="next-ring-track"
+                pathLength="100"
+                d="M22,3 C31,3.4 40.6,12 41,21.8 C41.4,31.6 31.8,40.7 22,41 C12.1,41.3 3.3,31.5 3,22 C2.7,12.3 12.6,2.9 22,3 Z"
+              />
+              <path
+                class="next-ring-fill"
+                data-next-ring
+                pathLength="100"
+                d="M22,3 C31,3.4 40.6,12 41,21.8 C41.4,31.6 31.8,40.7 22,41 C12.1,41.3 3.3,31.5 3,22 C2.7,12.3 12.6,2.9 22,3 Z"
+              />
+            </svg>
+            <span class="next-progress-label">Keep scrolling</span>
+          </span>
+
+        </a>
+
+      </div>
+    </section>
+
+  </main>
+
+  <Footer client:visible={{ rootMargin: '100px' }} active="gallery" />
+
+</BaseLayout>
+
+<script>
+  (() => {
+    // ---- scroll reveals for the article blocks ---------------------------
+    const revealables = document.querySelectorAll<HTMLElement>('[data-reveal]');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduced) {
+      revealables.forEach((el) => el.classList.add('is-in'));
+    } else {
+      // Stagger within each group rather than across the whole page. A global
+      // index would hand the last block a delay of several seconds, long after
+      // the reader has scrolled to it.
+      revealables.forEach((el) => {
+        const siblings = Array.from(
+          el.parentElement?.querySelectorAll(':scope > [data-reveal]') ?? []
+        );
+        const position = Math.max(0, siblings.indexOf(el));
+        el.style.setProperty('--reveal-delay', `${Math.min(position * 110, 440)}ms`);
+      });
+
+      // Swept on scroll rather than watched with an IntersectionObserver: a
+      // jump — restored scroll position, anchor link, or a fast flick — can
+      // carry a block from below the fold to above the viewport without its
+      // intersection ratio ever crossing a threshold, so no callback fires and
+      // it stays invisible forever. A sweep has no such blind spot.
+      const pending = new Set(revealables);
+      let revealTicking = false;
+
+      const sweep = () => {
+        revealTicking = false;
+        const limit = window.innerHeight * 0.88;
+        pending.forEach((el) => {
+          // Covers both "has risen into view" and "already scrolled past".
+          if (el.getBoundingClientRect().top < limit) {
+            el.classList.add('is-in');
+            pending.delete(el);
+          }
+        });
+        if (pending.size === 0) {
+          window.removeEventListener('scroll', onRevealScroll);
+        }
+      };
+
+      function onRevealScroll() {
+        if (revealTicking) return;
+        revealTicking = true;
+        window.requestAnimationFrame(sweep);
+      }
+
+      window.addEventListener('scroll', onRevealScroll, { passive: true });
+      window.addEventListener('resize', onRevealScroll);
+      sweep();
+    }
+
+    // ---- scroll-committed handover to the next activity ------------------
+    const zone = document.querySelector<HTMLElement>('[data-next-zone]');
+    const panel = document.querySelector<HTMLElement>('[data-next-panel]');
+    const sentinel = document.querySelector<HTMLElement>('[data-next-sentinel]');
+    const ring = document.querySelector<SVGPathElement>('[data-next-ring]');
+    const link = document.querySelector<HTMLAnchorElement>('[data-next-link]');
+    if (!zone || !panel || !sentinel || !ring || !link) return;
+
+    if (reduced) {
+      panel.classList.add('is-visible');
+      ring.style.strokeDashoffset = '0';
+      return;
+    }
+
+    let armed = false;
+    let committed = false;
+    let ticking = false;
+    let shown = 0;
+
+    const armObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) armed = true;
+        });
+      },
+      { rootMargin: '0px 0px -10% 0px' }
+    );
+    armObserver.observe(sentinel);
+
+    const update = () => {
+      ticking = false;
+      if (!armed || committed) return;
+
+      const rect = zone.getBoundingClientRect();
+      const travel = rect.height || 1;
+      const raw = (window.innerHeight - rect.top) / travel;
+      const progress = Math.min(1, Math.max(0, raw));
+
+      // Ease the ring so it fills smoothly rather than snapping with each
+      // coarse wheel delta.
+      shown += (progress - shown) * 0.16;
+
+      panel.classList.toggle('is-visible', progress > 0.02);
+      ring.style.strokeDashoffset = String(100 - shown * 100);
+
+      if (progress >= 0.995) {
+        committed = true;
+        ring.style.strokeDashoffset = '0';
+        panel.classList.add('is-committing');
+        // Let the commit flourish land before handing over; the view
+        // transition takes it from here.
+        window.setTimeout(() => {
+          window.location.href = link.href;
+        }, 260);
+      }
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
+  })();
+</script>

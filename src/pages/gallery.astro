@@ -1,72 +1,111 @@
 ---
+/**
+ * Gallery Page
+ * Developer Students Club • SRM IST Ramapuram
+ *
+ * Club activities arranged as superellipse squircles on a 3D helix that turns
+ * continuously, and faster under the reader's scroll. Each squircle links to
+ * its generated detail page at /gallery/[slug].
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header';
-import CardCarousel from '../components/CardCarousel';
+import Header from '../components/Header.tsx';
+import Footer from '../components/Footer.tsx';
+import SideRays from '../components/SideRays.tsx';
+import TechParticles from '../components/TechParticles.tsx';
+import Watermark from '../components/Watermark.astro';
+import SquircleDefs from '../components/gallery/SquircleDefs.astro';
+import GallerySpiral from '../components/gallery/GallerySpiral.tsx';
+import '../styles/contact.css';
+import '../styles/gallery.css';
 ---
 
-<BaseLayout title="Gallery | Developer Students Club">
-  <style>
-    @keyframes dsc-marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-    .dsc-marquee-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      width: 100%;
-      height: 40px;
-      overflow: hidden;
-      background: #111827;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
-      z-index: 150;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .dsc-marquee-content {
-      display: flex;
-      animation: dsc-marquee 30s linear infinite;
-    }
-    .dsc-marquee-item {
-      display: flex;
-      align-items: center;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-    .dsc-marquee-star {
-      color: #14a3a3;
-      margin: 0 32px;
-      font-size: 14px;
-    }
-  </style>
+<BaseLayout
+  title="Gallery — Developer Students Club | SRM IST Ramapuram"
+  description="Hackathons, workshops, design jams and open-source drives at the Developer Students Club, SRM IST Ramapuram. Explore what the club actually builds."
+>
 
+  <!-- Shared superellipse clip path (static markup, no client JS) -->
+  <SquircleDefs />
+
+  <!-- Interactive WebGL SideRays Background (React Island) -->
+  <div class="side-rays-bg">
+    <SideRays
+      client:only="react"
+      speed={1.2}
+      rayColor1="#1dd1a1"
+      rayColor2="#00f2fe"
+      intensity={1.2}
+      spread={2.5}
+      origin="top-right"
+      tilt={0}
+      saturation={1.5}
+      blend={0.75}
+      falloff={1.6}
+      opacity={0.65}
+    />
+  </div>
+
+  <!-- Interactive Background Canvas Particles (React Island) -->
+  <TechParticles client:idle />
+
+  <!-- Decorative Corner Circuit Board Graphics -->
+  <svg class="corner-graphic corner-top-left" width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,50 L100,50 L150,100 L220,100" stroke="rgba(232, 237, 233, 0.4)" stroke-width="1.5" stroke-linecap="round" />
+    <path d="M60,0 L60,80 L100,120 L150,120" stroke="rgba(232, 237, 233, 0.25)" stroke-width="1" stroke-linecap="round" />
+    <circle cx="220" cy="100" r="3" fill="#1dd1a1" />
+    <circle cx="150" cy="120" r="2" fill="rgba(232, 237, 233, 0.6)" />
+  </svg>
+
+  <svg class="corner-graphic corner-top-right" width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M250,50 L150,50 L100,100 L30,100" stroke="rgba(232, 237, 233, 0.4)" stroke-width="1.5" stroke-linecap="round" />
+    <path d="M190,0 L190,80 L150,120 L100,120" stroke="rgba(232, 237, 233, 0.25)" stroke-width="1" stroke-linecap="round" />
+    <circle cx="30" cy="100" r="3" fill="#1dd1a1" />
+    <circle cx="100" cy="120" r="2" fill="rgba(232, 237, 233, 0.6)" />
+  </svg>
+
+  <!-- Marquee Ticker -->
   <div class="dsc-marquee-container">
     <div class="dsc-marquee-content">
-      <div style="display: flex; align-items: center;">
-        <div class="dsc-marquee-item">UPCOMING HACKATHON: CODEFEST 2026</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">NEW WORKSHOPS EVERY WEEK</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">JOIN THE OPEN SOURCE REVOLUTION</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">EMPOWERING STUDENT DEVELOPERS</div><div class="dsc-marquee-star">★</div>
-      </div>
-      <div style="display: flex; align-items: center;">
-        <div class="dsc-marquee-item">UPCOMING HACKATHON: CODEFEST 2026</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">NEW WORKSHOPS EVERY WEEK</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">JOIN THE OPEN SOURCE REVOLUTION</div><div class="dsc-marquee-star">★</div>
-        <div class="dsc-marquee-item">EMPOWERING STUDENT DEVELOPERS</div><div class="dsc-marquee-star">★</div>
-      </div>
+      <div class="dsc-marquee-item">HACKATHONS · WORKSHOPS · DESIGN JAMS</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">EVERY PANEL OPENS ONTO THE FULL STORY</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">BUILT BY STUDENTS, SHIPPED IN PUBLIC</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">EMPOWERING STUDENT DEVELOPERS AT SRM IST RAMAPURAM</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">HACKATHONS · WORKSHOPS · DESIGN JAMS</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">EVERY PANEL OPENS ONTO THE FULL STORY</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">BUILT BY STUDENTS, SHIPPED IN PUBLIC</div><div class="dsc-marquee-star">★</div>
+      <div class="dsc-marquee-item">EMPOWERING STUDENT DEVELOPERS AT SRM IST RAMAPURAM</div><div class="dsc-marquee-star">★</div>
     </div>
   </div>
 
+  <!-- Navigation (React Island) -->
   <Header client:load active="gallery" />
 
-  <!-- ========== REACT CAROUSEL SECTION ========== -->
-  <section id="react-carousel-root" style="width: 100vw; height: 100vh; overflow: hidden;">
-    <CardCarousel client:load />
-  </section>
+  <main class="contact-container" style="max-width: 1100px;">
+    <div class="contact-layout-wrapper" style="--watermark-size: clamp(6.5rem, 22vw, 16rem);">
+
+      <!-- 3D Parallax Watermark -->
+      <Watermark text="GALLERY" />
+
+      <!-- Spiral Gallery Section (React Island) -->
+      <GallerySpiral client:idle />
+
+    </div>
+  </main>
+
+  <!-- Footer (React Island) -->
+  <Footer client:visible={{ rootMargin: '100px' }} active="gallery" />
 
 </BaseLayout>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      import('gsap').then(({ gsap }) => {
+        gsap.fromTo('.gallery-spiral-header',
+          { opacity: 0, y: 15, filter: 'blur(4px)' },
+          { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.0, ease: 'power2.out' }
+        );
+      });
+    }, 2500);
+  });
+</script>
