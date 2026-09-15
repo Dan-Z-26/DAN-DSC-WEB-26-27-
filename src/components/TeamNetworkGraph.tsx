@@ -1,26 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-
-interface Member {
-  name: string;
-  role: string;
-  domain: 'presidency' | 'technical' | 'creatives' | 'operations';
-  image: string;
-  github: string;
-  linkedin: string;
-  email: string;
-  skills?: string[];
-}
+import type { Member } from './TeamShowcase';
 
 interface Node {
   id: string;
   label: string;
   role: string;
-  domain: 'presidency' | 'technical' | 'creatives' | 'operations';
-  type: 'president' | 'lead' | 'subdomain' | 'member';
+  domain: 'presidency' | 'technical' | 'creatives' | 'operations' | 'core';
+  type: 'president' | 'lead' | 'member';
   parentId?: string;
   visible: boolean;
   expanded?: boolean;
-  
+
   // Physics properties
   x: number;
   y: number;
@@ -28,9 +18,9 @@ interface Node {
   vy: number;
   radius: number;
   color: string;
-  
-  // Member reference (only for president, leads, and members)
-  memberRef?: Member;
+
+  // Member reference
+  memberRef: Member;
 }
 
 interface Link {
@@ -39,64 +29,207 @@ interface Link {
   visible: boolean;
 }
 
-const MEMBERS_DATA: Member[] = [
-  {
-    name: 'Karthik Rajan',
-    role: 'President',
-    domain: 'presidency',
-    image: '/team/karthik-rajan.webp',
-    github: 'https://github.com',
-    linkedin: 'https://linkedin.com',
-    email: 'mailto:dsc.srmrmp@gmail.com',
-  },
-  {
-    name: 'Aditya Kumar',
-    role: 'Technical Lead',
-    domain: 'technical',
-    image: '/team/aditya-kumar.webp',
-    github: 'https://github.com',
-    linkedin: 'https://linkedin.com',
-    email: 'mailto:dsc.srmrmp@gmail.com',
-  },
-  {
-    name: 'Deepika Menon',
-    role: 'Creatives Lead',
-    domain: 'creatives',
-    image: '/team/deepika-menon.webp',
-    github: 'https://github.com',
-    linkedin: 'https://linkedin.com',
-    email: 'mailto:dsc.srmrmp@gmail.com',
-  },
-  {
-    name: 'Sneha Patel',
-    role: 'Operations Lead',
-    domain: 'operations',
-    image: '/team/sneha-patel.webp',
-    github: 'https://github.com',
-    linkedin: 'https://linkedin.com',
-    email: 'mailto:dsc.srmrmp@gmail.com',
-  },
-  {
-    name: 'Rahul Anand',
-    role: 'Machine Learning',
-    domain: 'technical',
-    image: '/team/rahul-anand.webp',
-    github: 'https://github.com',
-    linkedin: 'https://linkedin.com',
-    email: 'mailto:dsc.srmrmp@gmail.com',
-  },
-];
-
 interface GraphProps {
+  members?: Member[];
   onSelectMember: (member: Member | null) => void;
 }
 
-export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
+const DOMAIN_COLORS: Record<string, string> = {
+  presidency: '#1dd1a1', // Mint Green
+  technical: '#eab308',   // Gold
+  operations: '#00f2fe',  // Cyan
+  creatives: '#c084fc',   // Purple
+  core: '#1dd1a1',        // Mint Green
+};
+
+function buildGraphData(members: Member[], width: number, height: number): { nodes: Node[]; links: Link[] } {
+  if (!members || members.length === 0) {
+    return { nodes: [], links: [] };
+  }
+
+  // 1. Identify President (Khushal Mittal)
+  const president =
+    members.find(
+      (m) =>
+        m.domain === 'presidency' ||
+        (m.team && m.team.toUpperCase().includes('PRESIDENT')) ||
+        m.role.toLowerCase().includes('president')
+    ) || members[0];
+
+  // 2. Identify Domain Leads
+  const techLead = members.find((m) => m.domain === 'technical' && m.lead);
+  const opsLead = members.find((m) => m.domain === 'operations' && m.lead);
+  const creativesLead = members.find((m) => m.domain === 'creatives' && m.lead);
+
+  // 3. Domain Members (excluding leads and president)
+  const techMembers = members.filter((m) => m.domain === 'technical' && !m.lead && m !== president);
+  const opsMembers = members.filter((m) => m.domain === 'operations' && !m.lead && m !== president);
+  const creativesMembers = members.filter((m) => m.domain === 'creatives' && !m.lead && m !== president);
+  const coreMembers = members.filter(
+    (m) => m.domain === 'core' && m !== president && !m.lead
+  );
+
+  const nodes: Node[] = [];
+  const links: Link[] = [];
+
+  const cx = width / 2;
+  const cy = height / 2;
+
+  // Root Node: President
+  nodes.push({
+    id: 'president',
+    label: president.name,
+    role: president.role || 'President',
+    domain: 'presidency',
+    type: 'president',
+    visible: true,
+    expanded: true,
+    x: cx,
+    y: cy - 40,
+    vx: 0,
+    vy: 0,
+    radius: 42,
+    color: DOMAIN_COLORS.presidency,
+    memberRef: president,
+  });
+
+  // Leads configurations: arranged around President
+  const leadConfigs = [
+    {
+      lead: creativesLead,
+      domain: 'creatives' as const,
+      id: 'lead_creatives',
+      members: creativesMembers,
+      x: cx,
+      y: cy - 145,
+      color: DOMAIN_COLORS.creatives,
+      baseAngle: -Math.PI / 2,
+    },
+    {
+      lead: techLead,
+      domain: 'technical' as const,
+      id: 'lead_technical',
+      members: techMembers,
+      x: cx - 160,
+      y: cy + 85,
+      color: DOMAIN_COLORS.technical,
+      baseAngle: Math.PI * 0.75,
+    },
+    {
+      lead: opsLead,
+      domain: 'operations' as const,
+      id: 'lead_operations',
+      members: opsMembers,
+      x: cx + 160,
+      y: cy + 85,
+      color: DOMAIN_COLORS.operations,
+      baseAngle: Math.PI * 0.25,
+    },
+  ];
+
+  leadConfigs.forEach((cfg) => {
+    if (!cfg.lead) return;
+
+    // Add Lead Node (starts closed by default)
+    nodes.push({
+      id: cfg.id,
+      label: cfg.lead.name,
+      role: cfg.lead.role,
+      domain: cfg.domain,
+      type: 'lead',
+      parentId: 'president',
+      visible: true,
+      expanded: false,
+      x: cfg.x,
+      y: cfg.y,
+      vx: 0,
+      vy: 0,
+      radius: 34,
+      color: cfg.color,
+      memberRef: cfg.lead,
+    });
+
+    // President -> Lead Link
+    links.push({
+      source: 'president',
+      target: cfg.id,
+      visible: true,
+    });
+
+    // Add Domain Members (start closed/hidden by default)
+    const count = cfg.members.length;
+    cfg.members.forEach((m, idx) => {
+      const memberId = `member_${m.id || idx}_${cfg.domain}`;
+      const spread = count > 1 ? (idx / (count - 1) - 0.5) * Math.PI * 1.15 : 0;
+      const angle = cfg.baseAngle + spread;
+      const dist = 95 + (idx % 2) * 25;
+
+      nodes.push({
+        id: memberId,
+        label: m.name,
+        role: m.role,
+        domain: cfg.domain,
+        type: 'member',
+        parentId: cfg.id,
+        visible: false,
+        x: cfg.x + Math.cos(angle) * dist,
+        y: cfg.y + Math.sin(angle) * dist,
+        vx: 0,
+        vy: 0,
+        radius: 24,
+        color: cfg.color,
+        memberRef: m,
+      });
+
+      // Lead -> Member Link (hidden until lead clicked)
+      links.push({
+        source: cfg.id,
+        target: memberId,
+        visible: false,
+      });
+    });
+  });
+
+  // Core / Unassigned members connect directly to President (hidden by default)
+  if (coreMembers.length > 0) {
+    coreMembers.forEach((m, idx) => {
+      const memberId = `member_${m.id || idx}_core`;
+      const angle = Math.PI * 0.5 + (idx / Math.max(1, coreMembers.length) - 0.5) * 0.9;
+      const dist = 120 + (idx % 2) * 20;
+
+      nodes.push({
+        id: memberId,
+        label: m.name,
+        role: m.role,
+        domain: 'core',
+        type: 'member',
+        parentId: 'president',
+        visible: false,
+        x: cx + Math.cos(angle) * dist,
+        y: cy + Math.sin(angle) * dist,
+        vx: 0,
+        vy: 0,
+        radius: 22,
+        color: DOMAIN_COLORS.core,
+        memberRef: m,
+      });
+
+      links.push({
+        source: 'president',
+        target: memberId,
+        visible: false,
+      });
+    });
+  }
+
+  return { nodes, links };
+}
+
+export default function TeamNetworkGraph({ members = [], onSelectMember }: GraphProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredNode, setHoveredNode] = useState<Node | null>(null);
-  
-  // Persistent refs to preserve nodes and links state across component re-renders
+
   const nodesRef = useRef<Node[] | null>(null);
   const linksRef = useRef<Link[] | null>(null);
 
@@ -104,16 +237,18 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
   const imagesCache = useRef<Record<string, HTMLImageElement>>({});
 
   useEffect(() => {
-    MEMBERS_DATA.forEach(m => {
-      if (m.image) {
+    members.forEach((m) => {
+      if (m.image && !imagesCache.current[m.image]) {
         const img = new Image();
+        img.crossOrigin = 'anonymous';
         img.src = m.image;
         img.onload = () => {
+          imagesCache.current[m.image] = img;
           imagesCache.current[m.name] = img;
         };
       }
     });
-  }, []);
+  }, [members]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -122,243 +257,13 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
     if (!ctx) return;
 
     let animationId: number;
-    let width = (canvas.width = containerRef.current?.clientWidth || 800);
-    let height = (canvas.height = 550);
+    let width = (canvas.width = containerRef.current?.clientWidth || 900);
+    let height = (canvas.height = 620);
 
-    const colors = {
-      presidency: '#1dd1a1', // Mint Green
-      technical: '#eab308',   // Gold
-      operations: '#00f2fe',  // Cyan
-      creatives: '#c084fc',   // Purple
-    };
-
-    // Initialize nodes only once
-    if (!nodesRef.current) {
-      nodesRef.current = [
-        // Root: President
-        {
-          id: 'president',
-          label: 'Karthik Rajan',
-          role: 'President',
-          domain: 'presidency',
-          type: 'president',
-          visible: true,
-          x: width / 2,
-          y: height / 2 - 40,
-          vx: 0,
-          vy: 0,
-          radius: 40,
-          color: colors.presidency,
-          memberRef: MEMBERS_DATA[0],
-        },
-        // Leads (Connected directly to president)
-        {
-          id: 'aditya',
-          label: 'Aditya Kumar',
-          role: 'Technical Lead',
-          domain: 'technical',
-          type: 'lead',
-          parentId: 'president',
-          visible: true,
-          expanded: false,
-          x: width / 2 - 180,
-          y: height / 2 + 80,
-          vx: 0,
-          vy: 0,
-          radius: 34,
-          color: colors.technical,
-          memberRef: MEMBERS_DATA[1],
-        },
-        {
-          id: 'deepika',
-          label: 'Deepika Menon',
-          role: 'Creatives Lead',
-          domain: 'creatives',
-          type: 'lead',
-          parentId: 'president',
-          visible: true,
-          expanded: false,
-          x: width / 2,
-          y: height / 2 - 170,
-          vx: 0,
-          vy: 0,
-          radius: 34,
-          color: colors.creatives,
-          memberRef: MEMBERS_DATA[2],
-        },
-        {
-          id: 'sneha',
-          label: 'Sneha Patel',
-          role: 'Operations Lead',
-          domain: 'operations',
-          type: 'lead',
-          parentId: 'president',
-          visible: true,
-          expanded: false,
-          x: width / 2 + 180,
-          y: height / 2 + 80,
-          vx: 0,
-          vy: 0,
-          radius: 34,
-          color: colors.operations,
-          memberRef: MEMBERS_DATA[3],
-        },
-        // Technical Subdomains (connect to aditya)
-        {
-          id: 'sub_ml',
-          label: 'Machine Learning',
-          role: 'Subdomain Hub',
-          domain: 'technical',
-          type: 'subdomain',
-          parentId: 'aditya',
-          visible: false,
-          expanded: false,
-          x: width / 2 - 250,
-          y: height / 2 + 150,
-          vx: 0,
-          vy: 0,
-          radius: 20,
-          color: colors.technical,
-        },
-        {
-          id: 'sub_web',
-          label: 'Web Dev',
-          role: 'Subdomain Hub',
-          domain: 'technical',
-          type: 'subdomain',
-          parentId: 'aditya',
-          visible: false,
-          expanded: false,
-          x: width / 2 - 120,
-          y: height / 2 + 150,
-          vx: 0,
-          vy: 0,
-          radius: 20,
-          color: colors.technical,
-        },
-        {
-          id: 'sub_app',
-          label: 'App Dev',
-          role: 'Subdomain Hub',
-          domain: 'technical',
-          type: 'subdomain',
-          parentId: 'aditya',
-          visible: false,
-          expanded: false,
-          x: width / 2 - 180,
-          y: height / 2 + 200,
-          vx: 0,
-          vy: 0,
-          radius: 20,
-          color: colors.technical,
-        },
-        // Creatives Subdomains (connect to deepika)
-        {
-          id: 'sub_design',
-          label: 'Design',
-          role: 'Subdomain Hub',
-          domain: 'creatives',
-          type: 'subdomain',
-          parentId: 'deepika',
-          visible: false,
-          expanded: false,
-          x: width / 2 - 80,
-          y: height / 2 - 230,
-          vx: 0,
-          vy: 0,
-          radius: 20,
-          color: colors.creatives,
-        },
-        {
-          id: 'sub_content',
-          label: 'Content',
-          role: 'Subdomain Hub',
-          domain: 'creatives',
-          type: 'subdomain',
-          parentId: 'deepika',
-          visible: false,
-          expanded: false,
-          x: width / 2 + 80,
-          y: height / 2 - 230,
-          vx: 0,
-          vy: 0,
-          radius: 20,
-          color: colors.creatives,
-        },
-        // Operations Subdomains (connect to sneha)
-        {
-          id: 'sub_mgmt',
-          label: 'Management',
-          role: 'Subdomain Hub',
-          domain: 'operations',
-          type: 'subdomain',
-          parentId: 'sneha',
-          visible: false,
-          expanded: false,
-          x: width / 2 + 120,
-          y: height / 2 + 150,
-          vx: 0,
-          vy: 0,
-          radius: 20,
-          color: colors.operations,
-        },
-        {
-          id: 'sub_mktg',
-          label: 'Marketing',
-          role: 'Subdomain Hub',
-          domain: 'operations',
-          type: 'subdomain',
-          parentId: 'sneha',
-          visible: false,
-          expanded: false,
-          x: width / 2 + 250,
-          y: height / 2 + 150,
-          vx: 0,
-          vy: 0,
-          radius: 20,
-          color: colors.operations,
-        },
-        // Members (Visible only when respective Subdomain is expanded)
-        {
-          id: 'rahul',
-          label: 'Rahul Anand',
-          role: 'Machine Learning',
-          domain: 'technical',
-          type: 'member',
-          parentId: 'sub_ml',
-          visible: false,
-          x: width / 2 - 320,
-          y: height / 2 + 220,
-          vx: 0,
-          vy: 0,
-          radius: 28,
-          color: colors.technical,
-          memberRef: MEMBERS_DATA[4],
-        },
-      ];
-    }
-
-    // Initialize links only once
-    if (!linksRef.current) {
-      linksRef.current = [
-        // President to leads
-        { source: 'president', target: 'aditya', visible: true },
-        { source: 'president', target: 'deepika', visible: true },
-        { source: 'president', target: 'sneha', visible: true },
-        // Technical Lead to its subdomains
-        { source: 'aditya', target: 'sub_ml', visible: false },
-        { source: 'aditya', target: 'sub_web', visible: false },
-        { source: 'aditya', target: 'sub_app', visible: false },
-        // Creatives Lead to its subdomains
-        { source: 'deepika', target: 'sub_design', visible: false },
-        { source: 'deepika', target: 'sub_content', visible: false },
-        // Operations Lead to its subdomains
-        { source: 'sneha', target: 'sub_mgmt', visible: false },
-        { source: 'sneha', target: 'sub_mktg', visible: false },
-        // Subdomains to members
-        { source: 'sub_ml', target: 'rahul', visible: false },
-      ];
-    }
+    // Initialize or reset nodes & links based on DB members
+    const graphData = buildGraphData(members, width, height);
+    nodesRef.current = graphData.nodes;
+    linksRef.current = graphData.links;
 
     const nodes = nodesRef.current;
     const links = linksRef.current;
@@ -376,62 +281,38 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
     const resizeCanvas = () => {
       if (!containerRef.current) return;
       width = canvas.width = containerRef.current.clientWidth;
-      height = canvas.height = 550;
+      height = canvas.height = 620;
     };
 
     window.addEventListener('resize', resizeCanvas);
 
-    // Expand/Collapse recursive hierarchy
+    // Expand/Collapse lead branches
     const toggleNode = (node: Node) => {
       if (node.type === 'lead') {
         const isExpanding = !node.expanded;
         node.expanded = isExpanding;
 
-        nodes.forEach(n => {
-          if (n.type === 'subdomain' && n.parentId === node.id) {
-            n.visible = isExpanding;
-            if (!isExpanding) {
-              // Hide everything recursively
-              n.expanded = false;
-              nodes.forEach(m => {
-                if (m.parentId === n.id) {
-                  m.visible = false;
-                }
-              });
-            } else {
-              // Burst outward
-              n.x = node.x + (Math.random() - 0.5) * 30;
-              n.y = node.y + (Math.random() - 0.5) * 30;
-              n.vx = (Math.random() - 0.5) * 6;
-              n.vy = (Math.random() - 0.5) * 6;
-            }
-          }
-        });
-      } else if (node.type === 'subdomain') {
-        const isExpanding = !node.expanded;
-        node.expanded = isExpanding;
-
-        nodes.forEach(n => {
+        nodes.forEach((n) => {
           if (n.parentId === node.id) {
             n.visible = isExpanding;
             if (isExpanding) {
-              n.x = node.x + (Math.random() - 0.5) * 30;
-              n.y = node.y + (Math.random() - 0.5) * 30;
+              n.x = node.x + (Math.random() - 0.5) * 40;
+              n.y = node.y + (Math.random() - 0.5) * 40;
               n.vx = (Math.random() - 0.5) * 6;
               n.vy = (Math.random() - 0.5) * 6;
             }
           }
         });
-      }
 
-      // Sync links visibility
-      links.forEach(l => {
-        const srcNode = nodes.find(n => n.id === l.source);
-        const tgtNode = nodes.find(n => n.id === l.target);
-        if (srcNode && tgtNode) {
-          l.visible = srcNode.visible && tgtNode.visible;
-        }
-      });
+        // Sync links visibility
+        links.forEach((l) => {
+          const srcNode = nodes.find((n) => n.id === l.source);
+          const tgtNode = nodes.find((n) => n.id === l.target);
+          if (srcNode && tgtNode) {
+            l.visible = srcNode.visible && tgtNode.visible;
+          }
+        });
+      }
     };
 
     const handleMouseDown = (e: MouseEvent) => {
@@ -439,7 +320,7 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
 
-      const clicked = nodes.find(n => {
+      const clicked = nodes.find((n) => {
         if (!n.visible) return false;
         const dx = mx - n.x;
         const dy = my - n.y;
@@ -464,14 +345,14 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
       if (draggedNode) {
         draggedNode.x = mx + mouseOffset.x;
         draggedNode.y = my + mouseOffset.y;
-        
+
         draggedNode.vx = mx - prevMouseX;
         draggedNode.vy = my - prevMouseY;
-        
+
         prevMouseX = mx;
         prevMouseY = my;
       } else {
-        const match = nodes.find(n => {
+        const match = nodes.find((n) => {
           if (!n.visible) return false;
           const dx = mx - n.x;
           const dy = my - n.y;
@@ -491,13 +372,13 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
-        
+
         const dx = mx - startDragX;
         const dy = my - startDragY;
         const dragDist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dragDist < 5) {
-          if (draggedNode.type === 'lead' || draggedNode.type === 'subdomain') {
+        if (dragDist < 6) {
+          if (draggedNode.type === 'lead') {
             toggleNode(draggedNode);
           }
           if (draggedNode.memberRef) {
@@ -514,18 +395,18 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
     canvas.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
 
-    // Spring constants (Adjusted for multi-level spacing layout)
+    // Spring constants tuned for ~21 nodes
     const restLengthMap: Record<string, number> = {
-      president_lead: 120,
-      lead_subdomain: 85,
-      subdomain_member: 70,
+      president_lead: 140,
+      lead_member: 90,
+      president_member: 110,
     };
-    const stiffness = 0.018;
+    const stiffness = 0.022;
     const repulsionStrength = 2200;
-    const damping = 0.88;
+    const damping = 0.86;
 
     const updatePhysics = () => {
-      const activeNodes = nodes.filter(n => n.visible);
+      const activeNodes = nodes.filter((n) => n.visible);
 
       // Repulsion force
       for (let i = 0; i < activeNodes.length; i++) {
@@ -540,23 +421,29 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
           const fx = (dx / dist) * force;
           const fy = (dy / dist) * force;
 
-          if (n1 !== draggedNode) { n1.vx += fx; n1.vy += fy; }
-          if (n2 !== draggedNode) { n2.vx -= fx; n2.vy -= fy; }
+          if (n1 !== draggedNode) {
+            n1.vx += fx;
+            n1.vy += fy;
+          }
+          if (n2 !== draggedNode) {
+            n2.vx -= fx;
+            n2.vy -= fy;
+          }
         }
       }
 
       // Spring attraction force along visible links
-      links.forEach(link => {
+      links.forEach((link) => {
         if (!link.visible) return;
-        const n1 = nodes.find(n => n.id === link.source)!;
-        const n2 = nodes.find(n => n.id === link.target)!;
+        const n1 = nodes.find((n) => n.id === link.source);
+        const n2 = nodes.find((n) => n.id === link.target);
+        if (!n1 || !n2) return;
 
-        // Custom resting spring length based on connection type
-        let restLen = restLengthMap.lead_subdomain;
-        if (n1.type === 'president' || n2.type === 'president') {
+        let restLen = restLengthMap.lead_member;
+        if (n1.type === 'president' && n2.type === 'lead') {
           restLen = restLengthMap.president_lead;
-        } else if (n1.type === 'member' || n2.type === 'member') {
-          restLen = restLengthMap.subdomain_member;
+        } else if (n1.type === 'president' && n2.type === 'member') {
+          restLen = restLengthMap.president_member;
         }
 
         const dx = n1.x - n2.x;
@@ -568,21 +455,30 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
         const fx = (dx / dist) * force;
         const fy = (dy / dist) * force;
 
-        if (n1 !== draggedNode) { n1.vx -= fx; n1.vy -= fy; }
-        if (n2 !== draggedNode) { n2.vx += fx; n2.vy += fy; }
+        if (n1 !== draggedNode) {
+          n1.vx -= fx;
+          n1.vy -= fy;
+        }
+        if (n2 !== draggedNode) {
+          n2.vx += fx;
+          n2.vy += fy;
+        }
       });
 
       // Gravity and bounds limits
-      activeNodes.forEach(n => {
+      activeNodes.forEach((n) => {
         if (n === draggedNode) return;
 
         const cx = width / 2;
         const cy = height / 2;
+        const targetY = n.type === 'president' ? cy - 30 : cy;
         const dx = cx - n.x;
-        const dy = cy - n.y;
-        
-        n.vx += dx * 0.0007;
-        n.vy += dy * 0.0007;
+        const dy = targetY - n.y;
+
+        // President anchored more firmly near center
+        const gravityWeight = n.type === 'president' ? 0.0018 : 0.0006;
+        n.vx += dx * gravityWeight;
+        n.vy += dy * gravityWeight;
 
         n.vx *= damping;
         n.vy *= damping;
@@ -590,10 +486,22 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
         n.y += n.vy;
 
         const margin = n.radius + 15;
-        if (n.x < margin) { n.x = margin; n.vx *= -0.2; }
-        if (n.x > width - margin) { n.x = width - margin; n.vx *= -0.2; }
-        if (n.y < margin) { n.y = margin; n.vy *= -0.2; }
-        if (n.y > height - margin) { n.y = height - margin; n.vy *= -0.2; }
+        if (n.x < margin) {
+          n.x = margin;
+          n.vx *= -0.2;
+        }
+        if (n.x > width - margin) {
+          n.x = width - margin;
+          n.vx *= -0.2;
+        }
+        if (n.y < margin) {
+          n.y = margin;
+          n.vy *= -0.2;
+        }
+        if (n.y > height - margin) {
+          n.y = height - margin;
+          n.vy *= -0.2;
+        }
       });
     };
 
@@ -601,36 +509,30 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
       updatePhysics();
       ctx.clearRect(0, 0, width, height);
 
-      pulseProgress = (pulseProgress + 0.008) % 1;
+      pulseProgress = (pulseProgress + 0.007) % 1;
 
       // 1. Draw Links
-      links.forEach(l => {
+      links.forEach((l) => {
         if (!l.visible) return;
-        const n1 = nodes.find(n => n.id === l.source)!;
-        const n2 = nodes.find(n => n.id === l.target)!;
+        const n1 = nodes.find((n) => n.id === l.source);
+        const n2 = nodes.find((n) => n.id === l.target);
+        if (!n1 || !n2) return;
 
-        // Draw dotted lines for subdomain connection nodes
+        const isLeadBranch = n1.type === 'president' && n2.type === 'lead';
+
         ctx.beginPath();
         ctx.moveTo(n1.x, n1.y);
         ctx.lineTo(n2.x, n2.y);
-        
-        if (n2.type === 'subdomain') {
-          ctx.strokeStyle = 'rgba(232, 237, 233, 0.04)';
-          ctx.setLineDash([4, 4]);
-        } else {
-          ctx.strokeStyle = 'rgba(232, 237, 233, 0.06)';
-          ctx.setLineDash([]);
-        }
-        ctx.lineWidth = n2.type === 'member' ? 1.5 : 2.5;
+        ctx.strokeStyle = isLeadBranch ? 'rgba(232, 237, 233, 0.12)' : 'rgba(232, 237, 233, 0.05)';
+        ctx.lineWidth = isLeadBranch ? 2.5 : 1.5;
         ctx.stroke();
-        ctx.setLineDash([]); // reset
 
-        // Draw pulse signals along links
+        // Animated flow signal pulses along links
         const px = n1.x + (n2.x - n1.x) * pulseProgress;
         const py = n1.y + (n2.y - n1.y) * pulseProgress;
 
         ctx.beginPath();
-        ctx.arc(px, py, n2.type === 'member' ? 3 : 4, 0, Math.PI * 2);
+        ctx.arc(px, py, isLeadBranch ? 3.5 : 2.5, 0, Math.PI * 2);
         ctx.fillStyle = n2.color;
         ctx.shadowColor = n2.color;
         ctx.shadowBlur = 8;
@@ -639,7 +541,7 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
       });
 
       // 2. Draw Nodes
-      nodes.forEach(n => {
+      nodes.forEach((n) => {
         if (!n.visible) return;
 
         ctx.save();
@@ -650,10 +552,10 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
 
         // Shadow circle glow
         ctx.beginPath();
-        ctx.arc(n.x, n.y, r + (n.type === 'subdomain' ? 2 : 4), 0, Math.PI * 2);
+        ctx.arc(n.x, n.y, r + 4, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(8, 13, 11, 0.95)';
         ctx.shadowColor = n.color;
-        ctx.shadowBlur = isHovered ? 15 : 6;
+        ctx.shadowBlur = isHovered ? 16 : 8;
         ctx.fill();
         ctx.shadowBlur = 0;
 
@@ -661,39 +563,39 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
         ctx.beginPath();
         ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
         ctx.strokeStyle = n.color;
-        ctx.lineWidth = n.type === 'subdomain' ? 1.5 : 3;
+        ctx.lineWidth = n.type === 'president' ? 3.5 : n.type === 'lead' ? 3 : 2;
         ctx.stroke();
 
-        if (n.type === 'subdomain') {
-          // Draw Subdomain Hub
+        // Clipped profile photo node from database
+        const img =
+          imagesCache.current[n.memberRef?.image || ''] ||
+          imagesCache.current[n.label] ||
+          imagesCache.current[n.memberRef?.name || ''];
+
+        if (img && img.complete && img.naturalWidth > 0) {
           ctx.beginPath();
-          ctx.arc(n.x, n.y, r - 1, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(17, 23, 20, 0.9)';
+          ctx.arc(n.x, n.y, r - 1.5, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(img, n.x - r, n.y - r, r * 2, r * 2);
+        } else {
+          // Fallback circular badge with clean initials if image loading
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, r - 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(17, 23, 20, 0.95)';
           ctx.fill();
 
-          // Subdomain abbreviation letters
           ctx.fillStyle = '#ffffff';
-          ctx.font = '600 9px Inter';
+          ctx.font = `600 ${Math.max(10, Math.round(r * 0.42))}px Inter, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          
-          const words = n.label.split(' ');
-          const abbr = words.length > 1 ? words.map(w => w[0]).join('') : words[0].substring(0, 3).toUpperCase();
-          ctx.fillText(abbr, n.x, n.y);
-        } else {
-          // Clipped profile photo nodes
-          const img = imagesCache.current[n.label];
-          if (img) {
-            ctx.beginPath();
-            ctx.arc(n.x, n.y, r - 1.5, 0, Math.PI * 2);
-            ctx.clip();
-            ctx.drawImage(img, n.x - r, n.y - r, r * 2, r * 2);
-          } else {
-            ctx.beginPath();
-            ctx.arc(n.x, n.y, r - 2, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(232, 237, 233, 0.1)';
-            ctx.fill();
-          }
+          const initials = n.label
+            .split(' ')
+            .filter(Boolean)
+            .map((w) => w[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
+          ctx.fillText(initials, n.x, n.y);
         }
 
         ctx.restore();
@@ -711,7 +613,7 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
       window.removeEventListener('mouseup', handleMouseUp);
       cancelAnimationFrame(animationId);
     };
-  }, [onSelectMember]);
+  }, [members, onSelectMember]);
 
   return (
     <div ref={containerRef} className="network-graph-container">
@@ -722,7 +624,7 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
           style={{
             position: 'absolute',
             left: `${hoveredNode.x}px`,
-            top: `${hoveredNode.y - hoveredNode.radius - 40}px`,
+            top: `${hoveredNode.y - hoveredNode.radius - 42}px`,
             transform: 'translateX(-50%)',
             pointerEvents: 'none',
           }}
@@ -731,8 +633,9 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
             <div className="tooltip-name">{hoveredNode.label}</div>
             <div className="tooltip-role" style={{ color: hoveredNode.color }}>
               {hoveredNode.role}
-              {hoveredNode.type === 'lead' && (hoveredNode.expanded ? ' (Click to Close)' : ' (Click to Open Subdomains)')}
-              {hoveredNode.type === 'subdomain' && (hoveredNode.expanded ? ' (Click to Close Members)' : ' (Click to Show Members)')}
+              {hoveredNode.type === 'lead' &&
+                ` (${hoveredNode.expanded ? 'Click to Collapse Members' : 'Click to Expand Members'})`}
+              {hoveredNode.type !== 'lead' && ' (Click to Inspect)'}
             </div>
           </div>
         </div>
@@ -756,7 +659,7 @@ export default function TeamNetworkGraph({ onSelectMember }: GraphProps) {
         .network-graph-canvas {
           display: block;
           width: 100%;
-          height: 550px;
+          height: 620px;
           background: transparent;
         }
 

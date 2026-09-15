@@ -90,6 +90,7 @@ export function formatMember(row: DbTeamMember): FormattedTeamMember {
 }
 
 export async function getTeamMembers(): Promise<FormattedTeamMember[]> {
+  const client = createClient({ url, authToken });
   try {
     // Sort order: President(0) → Tech Lead(1) → Ops Lead(2) → Creatives Lead(3)
     //           → Tech Members(4) → Ops Members(5) → Creatives Members(6) → unassigned(7)
@@ -108,11 +109,15 @@ export async function getTeamMembers(): Promise<FormattedTeamMember[]> {
         END,
         name ASC
     `;
-    const result = await turso.execute(sql);
+    const result = await client.execute(sql);
     const rows = result.rows as unknown as DbTeamMember[];
     return rows.map(formatMember);
   } catch (err) {
     console.error('Failed to fetch team members from Turso:', err);
     return [];
+  } finally {
+    try {
+      client.close();
+    } catch {}
   }
 }
