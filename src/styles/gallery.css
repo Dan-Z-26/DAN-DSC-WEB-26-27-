@@ -1,0 +1,1125 @@
+/* ============================================================
+   gallery.css — Gallery page exclusive styles
+   Developer Students Club • SRM IST Ramapuram
+   ============================================================
+   NOTE: contact.css is also imported on this page (for shared
+   structural classes: .contact-container, .contact-layout-wrapper,
+   .side-rays-bg, .corner-graphic, .dsc-marquee-*, etc.)
+   This file adds ONLY Gallery-specific styles.
+
+   Aesthetic: comic-print mixed media — halftone dots, misprint
+   RGB split, heavy inked borders on tilted panels, hand-drawn
+   line work. Panels read as cream newsprint cut out and pasted
+   onto the site's dark ground.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Permanent+Marker&display=swap');
+
+/* global.css sets `body { overflow-x: hidden }`, which makes body a scroll
+   container — enough to break position: sticky and anchor positioning for
+   anything nested inside it. `clip` gives identical horizontal-overflow
+   protection without creating one. This file is only loaded on the gallery
+   routes, so the override does not reach other pages. */
+body {
+  overflow-x: clip;
+}
+
+.gallery-spiral {
+  --comic-ink: #0b0b0b;
+  --comic-paper: #f2e9db;
+  --comic-paper-dim: #b9ae9d;
+  --comic-accent: #1dd1a1;
+  --comic-pop: #ffd23f;
+  --comic-red: #ff3b30;
+  --comic-cyan: #00e5ff;
+
+  --comic-display: 'Bangers', 'Bebas Neue', Impact, sans-serif;
+  --comic-hand: 'Permanent Marker', 'Bebas Neue', cursive;
+
+  position: relative;
+  z-index: 10;
+  /* The shared shell (.contact-container / .contact-layout-wrapper) sets
+     pointer-events: none so empty areas fall through to background art.
+     Re-enable it here or the activity links are not clickable. */
+  pointer-events: auto;
+  /* A tilted panel's bounding box is wider than the panel; clip rather than
+     scroll so no imperfect border can create a horizontal scrollbar.
+     `clip` (not `hidden`) keeps sticky working inside. */
+  overflow-x: clip;
+}
+
+/* ============================================================
+   AUTOMATIC MISPRINT GLITCH
+   Runs on its own rather than on hover — the press is always
+   slightly out of register, and every so often badly so.
+   Only text-shadow animates, which repaints the glyphs and
+   nothing else; layout and compositing are untouched.
+   ============================================================ */
+
+@keyframes comicMisprint {
+  0%, 88%, 100% {
+    text-shadow:
+      -0.016em 0.011em 0 var(--comic-red),
+      0.016em -0.011em 0 var(--comic-cyan);
+  }
+  89% {
+    text-shadow:
+      -0.075em 0.004em 0 var(--comic-red),
+      0.055em -0.01em 0 var(--comic-cyan);
+  }
+  91% {
+    text-shadow:
+      0.06em -0.012em 0 var(--comic-red),
+      -0.07em 0.008em 0 var(--comic-cyan);
+  }
+  93% {
+    text-shadow:
+      -0.035em 0.022em 0 var(--comic-red),
+      0.045em -0.018em 0 var(--comic-cyan);
+  }
+  95% {
+    text-shadow:
+      -0.09em 0 0 var(--comic-red),
+      0.08em 0.006em 0 var(--comic-cyan);
+  }
+  97% {
+    text-shadow:
+      -0.016em 0.011em 0 var(--comic-red),
+      0.016em -0.011em 0 var(--comic-cyan);
+  }
+}
+
+.gallery-title-split,
+.activity-title,
+.activity-detail-title,
+.next-title {
+  animation: comicMisprint 7s steps(1, end) infinite;
+}
+
+/* Offset starts so the headings never misprint in unison. */
+.activity-detail-title { animation-duration: 6.2s; }
+.next-title { animation-delay: -2.4s; animation-duration: 8.1s; }
+.activity-title { animation-delay: -4.1s; animation-duration: 9.3s; }
+
+/* ============================================================
+   SECTION HEADER
+   ============================================================ */
+
+.gallery-spiral-header {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.gallery-kicker {
+  display: inline-block;
+  padding: 0.28rem 0.85rem;
+  background: var(--comic-pop);
+  color: var(--comic-ink);
+  border: 3px solid var(--comic-ink);
+  font-family: var(--comic-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+
+.gallery-spiral-title {
+  margin: 1.1rem 0 0;
+  font-family: 'Bebas Neue', 'Bebas Neue Fallback', sans-serif;
+  font-size: clamp(2.6rem, 8vw, 5rem);
+  line-height: 0.94;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--comic-paper);
+}
+
+.gallery-title-split {
+  display: inline-block;
+  color: var(--comic-accent);
+}
+
+.gallery-spiral-description {
+  margin: 1rem auto 0;
+  max-width: 46ch;
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+  line-height: 1.65;
+  color: var(--comic-paper-dim);
+}
+
+/* Hand-drawn divider — deliberately irregular path, not a clean rule. */
+.gallery-divider {
+  display: block;
+  width: min(320px, 70%);
+  height: 12px;
+  margin: 1.6rem auto 0;
+}
+
+.gallery-divider path {
+  fill: none;
+  stroke: var(--comic-paper);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.75;
+}
+
+.gallery-divider .gallery-divider-echo {
+  stroke: var(--comic-accent);
+  stroke-width: 1.4;
+  opacity: 0.45;
+}
+
+/* ============================================================
+   SPIRAL STAGE
+   The coil turns under its own power, so the stage is a single
+   viewport-tall frame rather than scroll runway. The canvas is the
+   camera: its perspective is what projects the coil's depth, and
+   GallerySpiral writes translateZ against it.
+   ============================================================ */
+
+.gallery-spiral-stage {
+  position: relative;
+  height: 100vh;
+  min-height: 620px;
+  margin-top: 2rem;
+}
+
+.gallery-spiral-canvas {
+  position: relative;
+  height: 100%;
+  /* Full-bleed out of the 1100px article column: the coil is scenery, and a
+     column-width frame crops its widest panels into a vertical stack. */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+  /* Deep enough that a panel swinging to the front of the coil grows by about
+     a fifth rather than lunging at the reader. Paired with DEPTH in
+     GallerySpiral — shortening one without the other changes the whole coil. */
+  perspective: 1500px;
+  perspective-origin: 50% 50%;
+  /* Halftone ground — static. Animating a gradient would repaint every
+     frame; this is painted once and composited. */
+  background-image: radial-gradient(
+    circle,
+    rgba(242, 233, 219, 0.055) 1px,
+    transparent 1.15px
+  );
+  background-size: 5px 5px;
+}
+
+/* ============================================================
+   ACTIVITY SQUIRCLE
+
+   TRANSFORM OWNERSHIP — one transform per layer, never shared:
+     .activity-slot   3D place   (JS writes it — coil position + attitude)
+     .activity-tilt   rotate     (static comic tilt)
+     .activity-media  scale      (hover zoom)
+   Merging these onto one element makes the last write win.
+   ============================================================ */
+
+.activity-slot {
+  /* Panel and coil share one scale: GallerySpiral writes --coil-unit on the
+     stage, shrinking both together where the viewport cannot hold the coil at
+     full size. The vmin fallback covers the frame before hydration. */
+  --slot-size: clamp(190px, calc(30 * var(--coil-unit, 1vmin)), 400px);
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--slot-size);
+  margin: calc(var(--slot-size) / -2) 0 0 calc(var(--slot-size) / -2);
+  text-decoration: none;
+  will-change: transform, opacity;
+}
+
+.activity-tilt {
+  position: relative;
+  transform: rotate(var(--slot-tilt, 0deg));
+}
+
+/* The inked border: a black squircle with the image squircle inset inside it,
+   so the border follows the superellipse instead of boxing it. */
+.activity-frame {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 7px;
+  box-sizing: border-box;
+  background: var(--comic-ink);
+  clip-path: url(#squircle-clip);
+}
+
+.activity-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--comic-paper);
+  clip-path: url(#squircle-clip);
+  transform: scale(1);
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.activity-slot:hover .activity-media,
+.activity-slot:focus-visible .activity-media {
+  transform: scale(1.08);
+}
+
+/* object-fit: cover is what makes the squircle hold its shape regardless of
+   the source photo's aspect ratio — portrait and landscape both centre-crop
+   into the same square superellipse. */
+.activity-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.4) contrast(1.3);
+}
+
+.activity-halftone {
+  position: absolute;
+  inset: 7px;
+  clip-path: url(#squircle-clip);
+  background-image: radial-gradient(
+    circle,
+    rgba(11, 11, 11, 0.42) 1.1px,
+    transparent 1.4px
+  );
+  background-size: 3.5px 3.5px;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* ============================================================
+   CALLOUT BADGES — micro-interaction flags, not on every element
+   ============================================================ */
+
+.activity-badge {
+  position: absolute;
+  padding: 0.2rem 0.62rem;
+  border: 3px solid var(--comic-ink);
+  box-shadow: 3px 3px 0 var(--comic-ink);
+  font-family: var(--comic-display);
+  font-size: 0.86rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--comic-ink);
+}
+
+.activity-badge--new {
+  top: -8px;
+  right: -10px;
+  background: var(--comic-pop);
+  transform: rotate(8deg);
+}
+
+.activity-badge--tag {
+  top: -10px;
+  left: -8px;
+  z-index: 3;
+  background: var(--comic-accent);
+  transform: rotate(-4deg);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.activity-slot:hover .activity-badge--tag,
+.activity-slot:focus-visible .activity-badge--tag {
+  opacity: 1;
+}
+
+/* ============================================================
+   CAPTION
+   ============================================================ */
+
+/* Comic caption box — overlays the lower edge of the panel and overhangs to
+   the left, the way a print caption breaks its frame. Keeping it on top of the
+   panel (rather than below it) means it can never land on a neighbouring item
+   as the coil turns. */
+.activity-caption {
+  position: absolute;
+  left: -10px;
+  right: 14%;
+  bottom: 8%;
+  z-index: 3;
+  padding: 0.34rem 0.6rem;
+  background: var(--comic-paper);
+  border: 3px solid var(--comic-ink);
+  box-shadow: 4px 4px 0 var(--comic-ink);
+  transform: rotate(-1.2deg);
+  text-align: left;
+}
+
+.activity-title {
+  display: block;
+  font-family: var(--comic-display);
+  font-size: clamp(1.05rem, 2.3vmin, 1.5rem);
+  line-height: 1.06;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  color: var(--comic-ink);
+}
+
+/* The one-liner lives on the detail page; on the coil it would not fit inside
+   the caption box. Shown only in the stacked mobile layout. */
+.activity-blurb {
+  display: none;
+}
+
+.activity-slot:focus-visible {
+  outline: 3px solid var(--comic-accent);
+  outline-offset: 6px;
+}
+/* ============================================================
+   ACTIVITY DETAIL PAGE
+   ============================================================ */
+
+/* Cross-document view transitions for same-origin navigations. Only the
+   gallery routes load this file, so only gallery -> gallery hand-overs
+   animate. Unsupported browsers simply navigate normally. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: comicFlashOut 0.28s ease both;
+}
+
+::view-transition-new(root) {
+  animation: comicFlashIn 0.34s ease both;
+}
+
+@keyframes comicFlashOut {
+  to {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@keyframes comicFlashIn {
+  from {
+    opacity: 0;
+    transform: scale(1.015);
+  }
+}
+
+.activity-detail-main {
+  justify-content: flex-start !important;
+  /* Clears the fixed header — the back link sat on top of the site logo at
+     shorter viewport heights. */
+  padding-top: clamp(8.5rem, 17vh, 11rem);
+}
+
+.activity-detail,
+.next-zone {
+  --comic-ink: #0b0b0b;
+  --comic-paper: #f2e9db;
+  --comic-paper-dim: #b9ae9d;
+  --comic-accent: #1dd1a1;
+  --comic-pop: #ffd23f;
+  --comic-red: #ff3b30;
+  --comic-cyan: #00e5ff;
+
+  --comic-display: 'Bangers', 'Bebas Neue', Impact, sans-serif;
+  --comic-hand: 'Permanent Marker', 'Bebas Neue', cursive;
+
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.activity-detail {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* ---- scroll reveal ---------------------------------------------------- */
+
+[data-reveal] {
+  opacity: 0;
+  /* One transform property, so the rise and the settle-in scale compose
+     instead of overwriting each other. */
+  transform: translateY(34px) scale(0.975);
+  filter: blur(6px);
+  transition:
+    opacity 1.05s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+    transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+    filter 0.95s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+  will-change: transform, opacity;
+}
+
+[data-reveal].is-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+/* Released once the entrance is done so the promoted layers do not linger. */
+[data-reveal].is-in {
+  will-change: auto;
+}
+
+/* ---- header ------------------------------------------------------------ */
+
+.activity-back {
+  display: inline-block;
+  margin-bottom: 2rem;
+  font-family: var(--comic-hand);
+  font-size: 1.05rem;
+  color: var(--comic-paper-dim);
+  text-decoration: none;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.activity-back:hover {
+  color: var(--comic-accent);
+  transform: translateX(-4px);
+}
+
+.activity-detail-tag {
+  display: inline-block;
+  padding: 0.3rem 0.95rem;
+  background: var(--comic-pop);
+  color: var(--comic-ink);
+  border: 4px solid var(--comic-ink);
+  box-shadow: 5px 5px 0 var(--comic-ink);
+  font-family: var(--comic-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.12em;
+  transform: rotate(-2.5deg);
+}
+
+.activity-detail-title {
+  margin: 1.4rem 0 0;
+  font-family: 'Bebas Neue', 'Bebas Neue Fallback', sans-serif;
+  font-size: clamp(3.4rem, 11vw, 7.5rem);
+  line-height: 0.9;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+  color: var(--comic-paper);
+}
+
+.activity-detail-meta {
+  margin: 0.9rem 0 0;
+  font-family: var(--comic-hand);
+  font-size: 1.05rem;
+  color: var(--comic-paper-dim);
+}
+
+.activity-detail-sep {
+  margin: 0 0.6rem;
+  color: var(--comic-accent);
+}
+
+/* ---- hero figure ------------------------------------------------------- */
+
+.activity-detail-figure {
+  position: relative;
+  margin: 2.5rem 0 2.75rem;
+}
+
+.activity-detail-frame {
+  position: relative;
+  width: min(100%, 620px);
+  margin: 0 auto;
+  aspect-ratio: 1;
+  padding: 8px;
+  box-sizing: border-box;
+  background: var(--comic-ink);
+  clip-path: url(#squircle-clip);
+  transform: rotate(-1.1deg);
+}
+
+.activity-detail-media {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--comic-paper);
+  clip-path: url(#squircle-clip);
+}
+
+.activity-detail-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.4) contrast(1.3);
+}
+
+.activity-detail-frame .activity-halftone {
+  inset: 8px;
+}
+
+/* Action burst — starburst polygon, comic sound-FX register. */
+.activity-detail-burst {
+  position: absolute;
+  top: -6px;
+  right: max(2%, calc(50% - 340px));
+  display: grid;
+  place-items: center;
+  width: 118px;
+  height: 118px;
+  background: var(--comic-red);
+  color: var(--comic-paper);
+  font-family: var(--comic-display);
+  font-size: 1.02rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  transform: rotate(-14deg);
+  clip-path: polygon(
+    50% 0%, 61% 18%, 80% 9%, 78% 30%, 98% 32%, 84% 48%,
+    100% 62%, 80% 66%, 88% 86%, 67% 80%, 62% 100%, 50% 84%,
+    38% 100%, 33% 80%, 12% 86%, 20% 66%, 0% 62%, 16% 48%,
+    2% 32%, 22% 30%, 20% 9%, 39% 18%
+  );
+}
+
+/* ---- speech bubble ----------------------------------------------------- */
+
+.activity-bubble {
+  position: relative;
+  width: fit-content;
+  max-width: 30ch;
+  margin: 0 auto 2.25rem;
+  padding: 1.15rem 1.5rem;
+  background: var(--comic-paper);
+  border: 4px solid var(--comic-ink);
+  border-radius: 26px;
+  box-shadow: 6px 6px 0 var(--comic-ink);
+}
+
+.activity-bubble p {
+  margin: 0;
+  font-family: var(--comic-hand);
+  font-size: clamp(1.2rem, 2.8vw, 1.6rem);
+  line-height: 1.3;
+  color: var(--comic-ink);
+  text-align: center;
+}
+
+/* Tail, drawn as two stacked triangles so the ink outline reads continuous. */
+.activity-bubble::before,
+.activity-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 2.5rem;
+  border-style: solid;
+}
+
+.activity-bubble::before {
+  border-width: 26px 20px 0 0;
+  border-color: var(--comic-ink) transparent transparent transparent;
+}
+
+.activity-bubble::after {
+  margin-left: 5px;
+  border-width: 18px 13px 0 0;
+  border-color: var(--comic-paper) transparent transparent transparent;
+}
+
+/* ---- body panel -------------------------------------------------------- */
+
+.activity-detail-body {
+  padding: 2rem 2.1rem;
+  background: var(--comic-paper);
+  border: 4px solid var(--comic-ink);
+  box-shadow: 8px 8px 0 var(--comic-ink);
+  color: var(--comic-ink);
+  transform: rotate(0.5deg);
+  background-image: radial-gradient(
+    circle,
+    rgba(11, 11, 11, 0.09) 1px,
+    transparent 1.3px
+  );
+  background-size: 4px 4px;
+}
+
+.activity-detail-text {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.9vw, 1.22rem);
+  line-height: 1.68;
+}
+
+/* Drop cap — print-page register. */
+.activity-detail-text::first-letter {
+  float: left;
+  margin: 0.06em 0.09em 0 0;
+  font-family: var(--comic-display);
+  font-size: 3.6em;
+  line-height: 0.76;
+  color: var(--comic-red);
+}
+
+/* ---- headline figures -------------------------------------------------- */
+
+.activity-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 3.5rem 0;
+}
+
+.activity-stat {
+  padding: 1.35rem 0.75rem;
+  background: var(--comic-ink);
+  border: 4px solid var(--comic-ink);
+  box-shadow: 6px 6px 0 var(--comic-accent);
+  text-align: center;
+}
+
+.activity-stat:nth-child(2) {
+  transform: rotate(-1deg);
+  box-shadow: 6px 6px 0 var(--comic-pop);
+}
+
+.activity-stat:nth-child(3) {
+  transform: rotate(0.8deg);
+  box-shadow: 6px 6px 0 var(--comic-red);
+}
+
+.activity-stat-value {
+  display: block;
+  font-family: 'Bebas Neue', 'Bebas Neue Fallback', sans-serif;
+  font-size: clamp(2.6rem, 7vw, 4rem);
+  line-height: 0.9;
+  color: var(--comic-paper);
+}
+
+.activity-stat-label {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--comic-hand);
+  font-size: 0.85rem;
+  color: var(--comic-accent);
+}
+
+/* ---- section heading --------------------------------------------------- */
+
+.activity-section-heading {
+  margin: 0 0 2rem;
+  font-family: 'Bebas Neue', 'Bebas Neue Fallback', sans-serif;
+  font-size: clamp(2rem, 5.5vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--comic-paper);
+}
+
+/* ---- numbered beats ---------------------------------------------------- */
+
+.activity-beats {
+  margin: 0 0 3.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.activity-beat {
+  position: relative;
+  display: flex;
+  gap: 1.15rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 1.6rem;
+  background: var(--comic-paper);
+  border: 4px solid var(--comic-ink);
+  box-shadow: 7px 7px 0 var(--comic-ink);
+  background-image: radial-gradient(
+    circle,
+    rgba(11, 11, 11, 0.07) 1px,
+    transparent 1.3px
+  );
+  background-size: 4px 4px;
+}
+
+.activity-beat:nth-child(odd) { transform: rotate(-0.6deg); }
+.activity-beat:nth-child(even) { transform: rotate(0.5deg); }
+
+.activity-beat-number {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  background: var(--comic-red);
+  color: var(--comic-paper);
+  border: 3px solid var(--comic-ink);
+  font-family: var(--comic-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  transform: rotate(-5deg);
+}
+
+.activity-beat-title {
+  margin: 0 0 0.4rem;
+  font-family: var(--comic-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  color: var(--comic-ink);
+}
+
+.activity-beat-body {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.62;
+  color: #2c2a26;
+}
+
+/* ---- pull quote -------------------------------------------------------- */
+
+.activity-quote {
+  margin: 0 0 1rem;
+  padding: 2rem 1.5rem;
+  border-top: 4px solid var(--comic-ink);
+  border-bottom: 4px solid var(--comic-ink);
+  text-align: center;
+}
+
+.activity-quote-text {
+  margin: 0;
+  font-family: var(--comic-hand);
+  font-size: clamp(1.3rem, 3.4vw, 2rem);
+  line-height: 1.32;
+  color: var(--comic-paper);
+}
+
+.activity-quote-by {
+  margin-top: 0.9rem;
+  font-family: var(--comic-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--comic-accent);
+}
+
+.activity-sentinel {
+  height: 1px;
+}
+
+/* ============================================================
+   NEXT-ACTIVITY HANDOVER
+   ============================================================ */
+
+.next-zone {
+  height: 150vh;
+  margin-top: 4rem;
+}
+
+.next-panel {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.next-panel.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.next-label {
+  margin: 0 0 1.1rem;
+  padding: 0.22rem 0.9rem;
+  background: var(--comic-accent);
+  border: 3px solid var(--comic-ink);
+  box-shadow: 4px 4px 0 var(--comic-ink);
+  font-family: var(--comic-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--comic-ink);
+  transform: rotate(-1.5deg);
+}
+
+.next-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+}
+
+.next-frame {
+  position: relative;
+  display: block;
+  width: clamp(190px, 30vmin, 300px);
+  aspect-ratio: 1;
+  padding: 7px;
+  box-sizing: border-box;
+  background: var(--comic-ink);
+  clip-path: url(#squircle-clip);
+  transform: rotate(1.4deg);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.next-link:hover .next-frame {
+  transform: rotate(1.4deg) scale(1.04);
+}
+
+.next-media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--comic-paper);
+  clip-path: url(#squircle-clip);
+}
+
+.next-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.4) contrast(1.3);
+}
+
+.next-frame .activity-halftone {
+  inset: 7px;
+}
+
+.next-title {
+  margin-top: 1.1rem;
+  font-family: 'Bebas Neue', 'Bebas Neue Fallback', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--comic-paper);
+}
+
+.next-blurb {
+  margin-top: 0.45rem;
+  max-width: 34ch;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--comic-paper-dim);
+  text-align: center;
+}
+
+.next-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.4rem;
+}
+
+.next-progress-label {
+  font-family: var(--comic-hand);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--comic-paper-dim);
+}
+
+.next-ring {
+  width: 38px;
+  height: 38px;
+  transform: rotate(-90deg);
+}
+
+.next-ring path {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.next-ring-track {
+  stroke: rgba(242, 233, 219, 0.22);
+  stroke-width: 3;
+}
+
+.next-ring-fill {
+  stroke: var(--comic-accent);
+  stroke-width: 4;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+/* Commit flourish — a beat of emphasis before the hand-over. */
+.next-panel.is-committing .next-frame {
+  transform: rotate(1.4deg) scale(1.07);
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.next-panel.is-committing .next-progress-label {
+  color: var(--comic-accent);
+}
+
+/* ============================================================
+   MOBILE — the spiral is abandoned below 768px. Five squircles on
+   an arc are unreadable at 375px, so the canvas unpins and stacks.
+   GallerySpiral clears its inline transforms at this width.
+   ============================================================ */
+
+@media (max-width: 767px) {
+  .gallery-spiral-stage {
+    height: auto;
+    min-height: 0;
+    margin-top: 1.5rem;
+  }
+
+  .gallery-spiral-canvas {
+    position: static;
+    height: auto;
+    width: auto;
+    margin-left: 0;
+    perspective: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.75rem;
+    padding: 2rem 1rem;
+  }
+
+  .activity-slot {
+    position: static;
+    width: min(74vw, 300px);
+    margin: 0;
+  }
+
+  /* Stacked slots have room underneath, so the caption drops out of the panel
+     and reads as a normal block again. */
+  .activity-caption {
+    position: static;
+    padding: 0.6rem 0.8rem;
+    margin-top: 0.9rem;
+    transform: rotate(-0.6deg);
+  }
+
+  .activity-title {
+    font-size: 1.25rem;
+  }
+
+  .activity-blurb {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: #4a463f;
+  }
+
+  /* Touch has no hover, so the tag stays visible. */
+  .activity-badge--tag {
+    opacity: 1;
+  }
+
+  /* Tilt is damped at narrow widths — a rotated panel's bounding box is wider
+     than the panel, and at full tilt the inked borders push past the gutter. */
+  .activity-detail-body {
+    transform: rotate(0.3deg);
+    padding: 1.4rem 1.2rem;
+    box-shadow: 5px 5px 0 var(--comic-ink);
+  }
+
+  .activity-detail-frame {
+    width: 100%;
+    transform: rotate(-0.5deg);
+  }
+
+  /* The burst sits over the hero corner rather than outside it, where there
+     is no gutter left to hang in. */
+  .activity-detail-burst {
+    right: -4px;
+    width: 86px;
+    height: 86px;
+    font-size: 0.8rem;
+  }
+
+  .activity-bubble {
+    max-width: 100%;
+    padding: 1rem 1.2rem;
+    box-shadow: 4px 4px 0 var(--comic-ink);
+  }
+
+  .activity-stats {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin: 2.5rem 0;
+  }
+
+  .activity-stat,
+  .activity-stat:nth-child(2),
+  .activity-stat:nth-child(3) {
+    transform: none;
+    padding: 1rem 0.75rem;
+  }
+
+  .activity-beat,
+  .activity-beat:nth-child(odd),
+  .activity-beat:nth-child(even) {
+    transform: rotate(0.3deg);
+    padding: 1.15rem 1.1rem;
+    gap: 0.85rem;
+    box-shadow: 5px 5px 0 var(--comic-ink);
+  }
+
+  .activity-beat-number {
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+  }
+
+  .next-zone {
+    height: 130vh;
+    margin-top: 2.5rem;
+  }
+
+  .next-frame {
+    transform: rotate(0.6deg);
+  }
+
+  .next-link:hover .next-frame,
+  .next-panel.is-committing .next-frame {
+    transform: rotate(0.6deg) scale(1.04);
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .activity-media,
+  .activity-blurb,
+  .activity-badge--tag {
+    transition: none;
+  }
+
+  .activity-slot:hover .activity-media,
+  .activity-slot:focus-visible .activity-media {
+    transform: scale(1);
+  }
+
+  /* The scroll transition degrades to a plain, always-visible next link. */
+  .next-panel {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  .gallery-title-split,
+  .activity-title,
+  .activity-detail-title,
+  .next-title {
+    animation: none;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
